@@ -1,28 +1,7 @@
-<style>
-    .admin-controls {
-        margin-top: 20px;
-        padding: 15px;
-        background: #fdf2f2;
-        border: 1px solid #d32f2f;
-        border-radius: 10px;
-    }
-</style>
-
-<div class="admin-controls">
-    <h4 style="color: #d32f2f; margin-top: 0;">Auctioneer Console</h4>
-    <input type="password" id="admin-pass" placeholder="Admin Password" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-    <button onclick="sendAdminAction('next')" style="background: #2e7d32;">Next Lot</button>
-    <button onclick="sendAdminAction('reset')" style="background: #555;">Reset Timer</button>
-</div>
-
-<script>
-    function sendAdminAction(actionType) {
-        const pass = document.getElementById('admin-pass').value;
-        if (!pass) return alert("Please enter the admin password.");
-        
-        socket.emit('adminAction', {
-            action: actionType,
-            password: pass
-        });
-    }
-</script>
+socket.on('auctionEnded', (data) => {
+    // Existing "SOLD" overlay logic...
+    
+    // Add an "Up Next" notification
+    const statusDiv = document.getElementById('status-msg');
+    statusDiv.innerHTML = `<span style="color:orange;">Next lot starts automatically in 30 seconds...</span>`;
+});
