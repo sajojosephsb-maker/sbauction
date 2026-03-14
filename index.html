@@ -1,26 +1,21 @@
-<div id="stats-modal" style="display:none; position:fixed; top:20%; left:30%; background:white; border:2px solid #333; padding:20px; z-index:1000; border-radius:10px; width:400px;">
-    <h3 id="stat-name">Buyer Profile</h3>
-    <hr>
-    <p><strong>Login Time:</strong> <span id="stat-login">-</span></p>
-    <p><strong>Logout Time:</strong> <span id="stat-logout">-</span></p>
-    <p><strong>GST No:</strong> <span id="stat-gst">-</span></p>
-    <p><strong>Credit Limit:</strong> <span id="stat-limit">-</span></p>
-    <p><strong>Total Purchases:</strong> <span id="stat-total">-</span></p>
-    <button onclick="document.getElementById('stats-modal').style.display='none'">Close</button>
+<div style="background: #e1f5fe; padding: 15px; border: 1px solid #0288d1; border-radius: 8px; margin-top: 20px;">
+    <h4 style="color: #01579b; margin-top: 0;">💬 Private Buyer Message</h4>
+    <input type="text" id="msg-target" placeholder="Recipient Name">
+    <textarea id="msg-content" placeholder="Type private message..." style="width:100%; margin: 10px 0;"></textarea>
+    <button onclick="sendPrivate()" style="background: #0288d1; color: white; width: 100%;">Send Secret Message</button>
 </div>
 
 <script>
-    function viewBuyerStats(name) {
+    function sendPrivate() {
+        const target = document.getElementById('msg-target').value;
+        const msg = document.getElementById('msg-content').value;
         const pass = document.getElementById('admin-pass').value;
-        socket.emit('adminAction', { action: 'GET_STATS', targetName: name, password: pass });
-    }
 
-    socket.on('receiveStats', (data) => {
-        if (!data) return alert("No data found for this buyer.");
-        document.getElementById('stats-modal').style.display = 'block';
-        document.getElementById('stat-name').innerText = name;
-        document.getElementById('stat-login').innerText = data.loginTime;
-        document.getElementById('stat-logout').innerText = data.logoutTime;
-        document.getElementById('stat-gst').innerText = data.gst;
-    });
+        socket.emit('sendPrivateMessage', {
+            targetName: target,
+            message: msg,
+            password: pass
+        });
+        alert("Message dispatched to " + target);
+    }
 </script>
