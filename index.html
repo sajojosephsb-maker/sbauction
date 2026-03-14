@@ -1,27 +1,23 @@
-<div id="report-center" style="background: #f4f4f4; padding: 15px; border-radius: 8px;">
-    <h3>📊 Global Reporting Center</h3>
-    <select id="report-type">
-        <option value="daily">Daily Auction Report</option>
-        <option value="weekly">Weekly Summary</option>
-        <option value="monthly">Monthly Taxation Report</option>
-        <option value="trader">Specific Trader Statement</option>
-    </select>
-    <input type="text" id="trader-name-filter" placeholder="Trader Name (if applicable)">
-    <button onclick="requestReport()" style="background: #007bff; color: white;">Generate PDF</button>
+<div style="background: #2c3e50; color: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+    <h3>📈 Master Report Center</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button onclick="getReport('daily')" style="padding: 10px;">Daily Report</button>
+        <button onclick="getReport('weekly')" style="padding: 10px;">Weekly Summary</button>
+        <button onclick="getReport('monthly')" style="padding: 10px;">Monthly GST Report</button>
+        <button onclick="getReport('trader')" style="padding: 10px;">Trader Statement</button>
+    </div>
 </div>
 
 <script>
-    function requestReport() {
-        const type = document.getElementById('report-type').value;
-        const trader = document.getElementById('trader-name-filter').value;
+    function getReport(type) {
         const pass = document.getElementById('admin-pass').value;
-
-        socket.emit('getReport', { type: type, traderName: trader, password: pass });
+        const trader = prompt("Enter Trader Name (Leave blank for full report):");
+        socket.emit('getReport', { type, traderName: trader, password: pass });
     }
 
     socket.on('reportData', (data) => {
-        console.log("Report Generated:", data.records);
-        alert(`${data.type.toUpperCase()} Report ready for export!`);
-        // Here you would trigger your PDF generator with the filtered records
+        console.table(data.records);
+        alert(`${data.type.toUpperCase()} Report generated with ${data.records.length} records.`);
+        // Note: You can now map these records to a PDF or CSV file
     });
 </script>
