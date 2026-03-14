@@ -1,71 +1,50 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 <style>
-    /* ... existing styles ... */
-    .btn-download {
-        background-color: #f39c12;
-        margin-top: 15px;
-        display: none; /* Hidden until auction ends */
+    .search-container { margin-bottom: 20px; position: relative; }
+    #search-input { width: 80%; padding: 10px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
+    #search-results { 
+        position: absolute; width: 80%; left: 10%; background: white; 
+        border: 1px solid #ddd; border-radius: 0 0 10px 10px; z-index: 50; 
+        display: none; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
+    .result-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 0.9em; }
+    .result-item:hover { background: #f0f4f0; }
 </style>
 
-<div id="sold-overlay">
-    <h2>SOLD!</h2>
-    <p id="final-msg"></p>
-    <button class="btn-download" id="download-btn" onclick="generatePDF()">Download Auction Report</button>
+<div class="search-container">
+    <input type="text" id="search-input" placeholder="Search by Grade, Size, or Color..." onkeyup="doSearch()">
+    <div id="search-results"></div>
 </div>
 
 <script>
-    // ... keep your existing socket and bid logic ...
-
-    socket.on('auctionEnded', (data) => {
-        document.getElementById('sold-overlay').style.display = "flex";
-        document.getElementById('final-msg').innerText = `Winner: ${data.highestBidder} at ₹${data.highestBid}`;
-        document.getElementById('download-btn').style.display = "inline-block";
+    function doSearch() {
+        const query = document.getElementById('search-input').value;
+        const resultsDiv = document.getElementById('search-results');
         
-        // Store current lot data globally for the PDF
-        window.lastSale = data; 
+        if (query.length > 1) {
+            socket.emit('searchLots', query);
+        } else {
+            resultsDiv.style.display = 'none';
+        }
+    }
+
+    socket.on('searchResults', (results) => {
+        const resultsDiv = document.getElementById('search-results');
+        if (results.length > 0) {
+            resultsDiv.innerHTML = results.map(item => `
+                <div class="result-item" onclick="alert('Viewing specs for: ${item.name}')">
+                    <strong>${item.name}</strong><br>
+                    <small>Size: ${item.specs.size} | Color: ${item.specs.color}</small>
+                </div>
+            `).join('');
+            resultsDiv.style.display = 'block';
+        } else {
+            resultsDiv.innerHTML = '<div class="result-item">No matching lots found</div>';
+            resultsDiv.style.display = 'block';
+        }
     });
 
-    async function generatePDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const data = window.lastSale;
-
-        // Header
-        doc.setFontSize(22);
-        doc.setTextColor(46, 125, 50); // Spices Board Green
-        doc.text("SPICES E-AUCTION REPORT", 105, 20, { align: "center" });
-        
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 35);
-        doc.text(`Auction Center: Puttady, Kerala`, 20, 42);
-
-        // Lot Info Table
-        doc.setDrawColor(200);
-        doc.line(20, 50, 190, 50);
-        doc.setFont(undefined, 'bold');
-        doc.text("ITEM DETAILS", 20, 60);
-        doc.setFont(undefined, 'normal');
-        
-        doc.text(`Lot Name: ${data.currentLot}`, 20, 70);
-        doc.text(`Quantity: ${data.specs.quantity}`, 20, 77);
-        doc.text(`Moisture: ${data.specs.moisture}`, 20, 84);
-        doc.text(`Liter Weight: ${data.specs.literWeight}`, 20, 91);
-        doc.text(`Quality: ${data.specs.size} / ${data.specs.color}`, 20, 98);
-
-        // Result Box
-        doc.setFillColor(240, 240, 240);
-        doc.rect(20, 110, 170, 30, 'F');
-        doc.setFontSize(16);
-        doc.text(`WINNING BIDDER: ${data.highestBidder}`, 25, 122);
-        doc.text(`FINAL PRICE: ₹${data.highestBid} / kg`, 25, 132);
-
-        // Footer
-        doc.setFontSize(10);
-        doc.text("This is a computer-generated report for the Spices Board e-Auction System.", 105, 160, { align: "center" });
-
-        doc.save(`Auction_Report_${data.currentLot}.pdf`);
-    }
+    // Close search when clicking outside
+    document.addEventListener('click', (e) => {
+        if (e.target.id !== 'search-input') document.getElementById('search-results').style.display = 'none';
+    });
 </script>
