@@ -1,0 +1,38 @@
+<div style="max-width: 400px; margin: auto; font-family: sans-serif; text-align: center;">
+    <h2 id="lot-title">LOT: ---</h2>
+    
+    <img id="lot-image" src="loading.jpg" style="width: 100%; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+    
+    <div style="display: flex; justify-content: space-around; background: #f0f0f0; padding: 10px; margin: 15px 0;">
+        <span>🎨 <b id="color-val">-</b></span>
+        <span>📏 <b id="size-val">-</b></span>
+        <span>💧 <b id="moist-val">-</b></span>
+    </div>
+
+    <div style="font-size: 32px; font-weight: bold; color: #d32f2f;">
+        ₹<span id="price-display">0</span>
+    </div>
+    
+    <button onclick="placeQuickBid()" style="width: 100%; padding: 20px; font-size: 24px; background: #2e7d32; color: white; border: none; border-radius: 50px; margin-top: 20px;">
+        PLACE BID (+₹10)
+    </button>
+</div>
+
+<script>
+    socket.on('updateBid', (state) => {
+        document.getElementById('lot-title').innerText = state.currentLot;
+        document.getElementById('lot-image').src = state.imageUrl;
+        document.getElementById('price-display').innerText = state.highestBid;
+        document.getElementById('color-val').innerText = state.specs.color;
+        document.getElementById('size-val').innerText = state.specs.size;
+        document.getElementById('moist-val').innerText = state.specs.moisture;
+    });
+
+    function placeQuickBid() {
+        const currentPrice = parseInt(document.getElementById('price-display').innerText);
+        socket.emit('placeBid', { 
+            amount: currentPrice + 10, 
+            bidderName: window.myName 
+        });
+    }
+</script>
