@@ -1,18 +1,23 @@
-<td style="padding: 5px; border: 1px solid #ddd;">
-    <input type="number" id="limit-${buyer.username}" value="1000000" style="width: 80px;">
-    <button onclick="approveWithLimit('${buyer.username}')" style="background: #2e7d32; color: white;">Approve</button>
-</td>
+<div id="credit-status" style="background: #e8f5e9; padding: 10px; border-radius: 8px; border: 1px solid #2e7d32; margin-bottom: 15px; display: none;">
+    <span style="font-weight: bold; color: #2e7d32;">My Credit Limit: </span>
+    <span id="display-limit">₹0</span> | 
+    <span style="font-weight: bold; color: #d32f2f;">Remaining: </span>
+    <span id="display-remaining">₹0</span>
+</div>
 
 <script>
-function approveWithLimit(username) {
-    const pass = document.getElementById('admin-pass').value;
-    const limitVal = document.getElementById(`limit-${username}`).value;
-    
-    socket.emit('adminAction', {
-        action: 'approve_buyer',
-        targetUser: username,
-        password: pass,
-        limit: parseInt(limitVal)
+    let myCreditLimit = 0;
+    let mySpentAmount = 0;
+
+    socket.on('buyerApproved', (data) => {
+        document.getElementById('credit-status').style.display = 'block';
+        myCreditLimit = data.limit;
+        updateCreditDisplay();
     });
-}
+
+    function updateCreditDisplay() {
+        const remaining = myCreditLimit - mySpentAmount;
+        document.getElementById('display-limit').innerText = "₹" + myCreditLimit.toLocaleString('en-IN');
+        document.getElementById('display-remaining').innerText = "₹" + remaining.toLocaleString('en-IN');
+    }
 </script>
