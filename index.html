@@ -1,39 +1,7 @@
-<style>
-    .history-sidebar {
-        position: fixed;
-        right: 20px;
-        top: 100px;
-        width: 250px;
-        background: #fff;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        padding: 15px;
-    }
-    .history-item {
-        border-bottom: 1px solid #eee;
-        padding: 8px 0;
-        font-size: 0.85em;
-    }
-    .history-price { color: #2e7d32; font-weight: bold; }
-</style>
-
-<div class="history-sidebar">
-    <h4 style="margin-top: 0; color: #555;">🕒 Recent Lot Results</h4>
-    <div id="history-list">
-        <p style="color: #999; font-size: 0.8em;">No lots sold yet.</p>
-    </div>
-</div>
-
-<script>
-    socket.on('updateLotHistory', (history) => {
-        const list = document.getElementById('history-list');
-        list.innerHTML = history.map(item => `
-            <div class="history-item">
-                <strong>${item.lot}</strong><br>
-                Sold to: ${item.bidder}<br>
-                <span class="history-price">Final: ₹${item.price}</span>
-            </div>
-        `).join('');
-    });
-</script>
+function enterAsObserver() {
+    document.getElementById('registration-screen').style.display = 'none';
+    document.getElementById('auction-dashboard').style.display = 'block';
+    // Hide the bidding input for observers
+    document.getElementById('bid-controls').style.display = 'none';
+    document.getElementById('status-msg').innerText = "Viewing as Observer (Read-Only)";
+}
