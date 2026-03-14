@@ -1,24 +1,23 @@
 <style>
     /* ... existing styles ... */
-    .specs-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        background: #f9f9f9;
-        padding: 15px;
+    .lot-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
         border-radius: 10px;
-        margin-top: 15px;
-        text-align: left;
-        font-size: 0.85em;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
     }
-    .spec-item b { color: #2e7d32; display: block; text-transform: uppercase; font-size: 0.75em; }
 </style>
 
 <div class="auction-board">
     <div id="sold-overlay"><h2>SOLD!</h2><p id="final-msg"></p></div>
     
     <div class="timer-box" id="timer-display">60</div>
-    <div id="lot-name" style="font-weight: bold; font-size: 1.2em; margin-top:10px;">LOT-102 (Green Cardamom)</div>
+    
+    <img id="lot-img" src="" alt="Spice Sample" class="lot-image">
+
+    <div id="lot-name" style="font-weight: bold; font-size: 1.2em;">LOT-102 (Green Cardamom)</div>
     
     <div class="specs-grid">
         <div class="spec-item"><b>Quantity</b><span id="spec-qty">-</span></div>
@@ -35,19 +34,11 @@
 
 <script>
     socket.on('updateBid', (data) => {
-        currentBid = data.highestBid;
-        document.getElementById('lot-name').innerText = data.currentLot;
-        document.getElementById('current-bid').innerText = '₹' + data.highestBid;
-        document.getElementById('bidder-id').innerText = data.highestBidder;
+        // ... (keep existing name and bid updates)
         
-        // Update Specifications
-        document.getElementById('spec-qty').innerText = data.specs.quantity;
-        document.getElementById('spec-moisture').innerText = data.specs.moisture;
-        document.getElementById('spec-size').innerText = data.specs.size;
-        document.getElementById('spec-color').innerText = data.specs.color;
-        document.getElementById('spec-shape').innerText = data.specs.shape;
-        document.getElementById('spec-lw').innerText = data.specs.literWeight;
+        // Update the Image
+        document.getElementById('lot-img').src = data.imageUrl;
 
-        document.getElementById('sold-overlay').style.display = "none";
+        // ... (keep specs updates)
     });
 </script>
