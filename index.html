@@ -3,21 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>Auction Listings</title>
+    <title>Live Spice Auction - Spices Board</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 40px; background-color: #f4f8f4; }
+        .auction-board { border: 3px solid #2e7d32; background: white; padding: 30px; border-radius: 15px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #2e7d32; font-size: 3em; margin: 10px 0; }
+        input { padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 20px; font-size: 16px; background-color: #2e7d32; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #1b5e20; }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to the Auction Site</h1>
-    </header>
-    <main>
-        <section id="auctions">
-            <h2>Current Auctions</h2>
-            <ul>
-                <!-- Auction items will be populated here -->
-            </ul>
-        </section>
-    </main>
-    <script src="script.js"></script>
+
+    <h2>Live Spices e-Auction</h2>
+    
+    <div class="auction-board">
+        <h3 id="lot-name">LOT-102 (Green Cardamom)</h3>
+        <p>Current High Bid:</p>
+        <h1 id="current-bid">₹1450</h1>
+        <p>Highest Bidder: <span id="bidder-id">None</span></p>
+    </div>
+
+    <div style="margin-top: 30px;">
+        <input type="number" id="bid-input" placeholder="Enter bid amount (₹)">
+        <button onclick="placeMockBid()">Place Bid</button>
+    </div>
+
+    <script>
+        // Note: This is currently a mocked frontend for GitHub Pages.
+        // Once the Node.js backend is deployed, we will connect Socket.io here.
+        let currentBid = 1450;
+
+        function placeMockBid() {
+            const inputField = document.getElementById('bid-input');
+            const newBid = parseInt(inputField.value);
+
+            if (newBid > currentBid) {
+                currentBid = newBid;
+                document.getElementById('current-bid').innerText = '₹' + currentBid;
+                document.getElementById('bidder-id').innerText = 'You (Mock User)';
+                inputField.value = '';
+            } else {
+                alert("Your bid must be higher than the current price!");
+            }
+        }
+    </script>
 </body>
 </html>
