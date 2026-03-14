@@ -1,16 +1,16 @@
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
-    <button onclick="quickBid(10)" style="background:#fff; color:#333; border:1px solid #ccc;">+₹10</button>
-    <button onclick="quickBid(50)" style="background:#fff; color:#333; border:1px solid #ccc;">+₹50</button>
-    <button onclick="quickBid(100)" style="background:#fff; color:#333; border:1px solid #ccc;">+₹100</button>
+<div style="display: flex; gap: 10px; margin-top: 15px;">
+    <button onclick="quickBid(10)" style="flex:1; padding:10px; background:#f4f4f4;">+10</button>
+    <button onclick="quickBid(50)" style="flex:1; padding:10px; background:#f4f4f4;">+50</button>
+    <button onclick="quickBid(100)" style="flex:1; padding:10px; background:#f4f4f4;">+100</button>
 </div>
 
 <script>
-    function quickBid(addAmount) {
-        const currentPrice = parseInt(document.getElementById('current-price').innerText);
-        const newBid = currentPrice + addAmount;
-        const bidder = prompt("Enter Bidder Name:");
+    function quickBid(increment) {
+        const currentAmount = parseInt(document.getElementById('highest-bid').innerText) || 0;
+        const newAmount = currentAmount + increment;
+        const bidder = prompt("Bidder Name?");
         if (bidder) {
-            socket.emit('placeBid', { amount: newBid, bidderName: bidder });
+            socket.emit('placeBid', { amount: newAmount, bidderName: bidder });
         }
     }
 </script>
