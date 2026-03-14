@@ -1,44 +1,71 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
     /* ... existing styles ... */
-    .lot-image {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        border-radius: 10px;
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
+    .btn-download {
+        background-color: #f39c12;
+        margin-top: 15px;
+        display: none; /* Hidden until auction ends */
     }
 </style>
 
-<div class="auction-board">
-    <div id="sold-overlay"><h2>SOLD!</h2><p id="final-msg"></p></div>
-    
-    <div class="timer-box" id="timer-display">60</div>
-    
-    <img id="lot-img" src="" alt="Spice Sample" class="lot-image">
-
-    <div id="lot-name" style="font-weight: bold; font-size: 1.2em;">LOT-102 (Green Cardamom)</div>
-    
-    <div class="specs-grid">
-        <div class="spec-item"><b>Quantity</b><span id="spec-qty">-</span></div>
-        <div class="spec-item"><b>Moisture</b><span id="spec-moisture">-</span></div>
-        <div class="spec-item"><b>Size</b><span id="spec-size">-</span></div>
-        <div class="spec-item"><b>Color</b><span id="spec-color">-</span></div>
-        <div class="spec-item"><b>Shape</b><span id="spec-shape">-</span></div>
-        <div class="spec-item"><b>Liter Weight</b><span id="spec-lw">-</span></div>
-    </div>
-
-    <h1 id="current-bid">₹0</h1>
-    <p>High Bidder: <strong id="bidder-id">None</strong></p>
+<div id="sold-overlay">
+    <h2>SOLD!</h2>
+    <p id="final-msg"></p>
+    <button class="btn-download" id="download-btn" onclick="generatePDF()">Download Auction Report</button>
 </div>
 
 <script>
-    socket.on('updateBid', (data) => {
-        // ... (keep existing name and bid updates)
-        
-        // Update the Image
-        document.getElementById('lot-img').src = data.imageUrl;
+    // ... keep your existing socket and bid logic ...
 
-        // ... (keep specs updates)
+    socket.on('auctionEnded', (data) => {
+        document.getElementById('sold-overlay').style.display = "flex";
+        document.getElementById('final-msg').innerText = `Winner: ${data.highestBidder} at ₹${data.highestBid}`;
+        document.getElementById('download-btn').style.display = "inline-block";
+        
+        // Store current lot data globally for the PDF
+        window.lastSale = data; 
     });
+
+    async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const data = window.lastSale;
+
+        // Header
+        doc.setFontSize(22);
+        doc.setTextColor(46, 125, 50); // Spices Board Green
+        doc.text("SPICES E-AUCTION REPORT", 105, 20, { align: "center" });
+        
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 35);
+        doc.text(`Auction Center: Puttady, Kerala`, 20, 42);
+
+        // Lot Info Table
+        doc.setDrawColor(200);
+        doc.line(20, 50, 190, 50);
+        doc.setFont(undefined, 'bold');
+        doc.text("ITEM DETAILS", 20, 60);
+        doc.setFont(undefined, 'normal');
+        
+        doc.text(`Lot Name: ${data.currentLot}`, 20, 70);
+        doc.text(`Quantity: ${data.specs.quantity}`, 20, 77);
+        doc.text(`Moisture: ${data.specs.moisture}`, 20, 84);
+        doc.text(`Liter Weight: ${data.specs.literWeight}`, 20, 91);
+        doc.text(`Quality: ${data.specs.size} / ${data.specs.color}`, 20, 98);
+
+        // Result Box
+        doc.setFillColor(240, 240, 240);
+        doc.rect(20, 110, 170, 30, 'F');
+        doc.setFontSize(16);
+        doc.text(`WINNING BIDDER: ${data.highestBidder}`, 25, 122);
+        doc.text(`FINAL PRICE: ₹${data.highestBid} / kg`, 25, 132);
+
+        // Footer
+        doc.setFontSize(10);
+        doc.text("This is a computer-generated report for the Spices Board e-Auction System.", 105, 160, { align: "center" });
+
+        doc.save(`Auction_Report_${data.currentLot}.pdf`);
+    }
 </script>
