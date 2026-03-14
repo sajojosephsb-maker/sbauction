@@ -1,23 +1,10 @@
-<div style="background: #000; color: #fff; padding: 15px; border-radius: 8px;">
-    <h4>📹 Live Sample Stream</h4>
-    <video id="admin-cam" autoplay playsinline style="width: 100%; border: 2px solid #444;"></video>
-    <button onclick="startStreaming()" style="background: #d32f2f; color: white; width: 100%; margin-top: 10px;">🔴 START LIVE FEED</button>
+<div style="border: 2px solid #2e7d32; border-radius: 8px; overflow: hidden;">
+    <div style="background: #2e7d32; color: white; padding: 5px; font-size: 12px;">LIVE SAMPLE VIEW</div>
+    <img id="buyer-video-feed" style="width: 100%; height: auto; background: #000;">
 </div>
 
 <script>
-    async function startStreaming() {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 400, height: 300 } });
-        const video = document.getElementById('admin-cam');
-        video.srcObject = stream;
-
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.width = 400; canvas.height = 300;
-
-        setInterval(() => {
-            context.drawImage(video, 0, 0, 400, 300);
-            const frame = canvas.toDataURL('image/jpeg', 0.5); // Compress for speed
-            socket.emit('streamFrame', frame);
-        }, 200); // 5 frames per second
-    }
+    socket.on('liveVideoFrame', (frame) => {
+        document.getElementById('buyer-video-feed').src = frame;
+    });
 </script>
