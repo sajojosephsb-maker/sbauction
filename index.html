@@ -1,21 +1,27 @@
-<div style="margin-top: 20px; border: 1px solid #d32f2f; padding: 10px;">
-    <h4>Record Buyer Payment</h4>
-    <input type="text" id="pay-buyer-name" placeholder="Dealer Name">
-    <input type="number" id="pay-amount" placeholder="Amount (₹)">
-    <button onclick="submitPayment()" style="background: #2e7d32; color: white;">Record Payment</button>
+<div id="report-center" style="background: #f4f4f4; padding: 15px; border-radius: 8px;">
+    <h3>📊 Global Reporting Center</h3>
+    <select id="report-type">
+        <option value="daily">Daily Auction Report</option>
+        <option value="weekly">Weekly Summary</option>
+        <option value="monthly">Monthly Taxation Report</option>
+        <option value="trader">Specific Trader Statement</option>
+    </select>
+    <input type="text" id="trader-name-filter" placeholder="Trader Name (if applicable)">
+    <button onclick="requestReport()" style="background: #007bff; color: white;">Generate PDF</button>
 </div>
 
 <script>
-    function submitPayment() {
-        const buyer = document.getElementById('pay-buyer-name').value;
-        const amount = document.getElementById('pay-amount').value;
+    function requestReport() {
+        const type = document.getElementById('report-type').value;
+        const trader = document.getElementById('trader-name-filter').value;
         const pass = document.getElementById('admin-pass').value;
 
-        socket.emit('recordPayment', {
-            buyerName: buyer,
-            amountPaid: parseFloat(amount),
-            password: pass
-        });
-        alert("Payment Recorded!");
+        socket.emit('getReport', { type: type, traderName: trader, password: pass });
     }
+
+    socket.on('reportData', (data) => {
+        console.log("Report Generated:", data.records);
+        alert(`${data.type.toUpperCase()} Report ready for export!`);
+        // Here you would trigger your PDF generator with the filtered records
+    });
 </script>
