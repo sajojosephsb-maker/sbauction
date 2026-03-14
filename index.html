@@ -1,64 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Spice Auction Admin</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; margin-bottom: 20px; }
-        .timer { font-size: 3rem; font-weight: bold; color: #e74c3c; }
-        .btn { padding: 10px 20px; cursor: pointer; border-radius: 5px; border: none; font-weight: bold; width: 100%; margin: 5px 0; }
-        .btn-next { background: #27ae60; color: white; }
-        .btn-reset { background: #e67e22; color: white; }
-    </style>
-</head>
-<body>
-
-    <div class="card">
-        <h2>Auction Controller</h2>
-        <div class="timer" id="timer">00</div>
-        <p>Lot: <strong id="lot">IDLE</strong> | Price: <strong id="price">₹0</strong></p>
-        <input type="file" id="csvFile" accept=".csv" style="margin-bottom: 15px;">
-        <button class="btn btn-next" onclick="nextLot()">✅ ACCEPT & NEXT LOT</button>
-        <button class="btn btn-reset" onclick="resetAuction()">🧹 RESET EVERYTHING</button>
-    </div>
-
-    <audio id="bidSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+<div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+    <p style="font-size: 0.8rem;">🎥 LIVE STREAM LINK (YouTube/Drive)</p>
+    <input type="text" id="videoUrl" placeholder="Paste Video Link here" style="width:70%; padding:8px;">
+    <button onclick="setVideo()" style="padding:8px; background:#3498db; color:white; border:none; border-radius:4px;">Update</button>
+</div>
 
 <script>
-    const socket = io("https://spice-auction-server.onrender.com");
-    const sound = document.getElementById('bidSound');
-
-    socket.on('playBidSound', () => {
-        sound.play().catch(e => console.log("Interact with page to enable sound"));
-    });
-
-    socket.on('updateBid', (data) => {
-        document.getElementById('timer').innerText = data.timeLeft || "00";
-        document.getElementById('lot').innerText = data.currentLot || "IDLE";
-        document.getElementById('price').innerText = "₹" + (data.highestBid || 0);
-    });
-
-    function nextLot() { socket.emit('adminAction', { password: "spices_admin_2026" }); }
-    
-    function resetAuction() {
-        if(confirm("Clear all data?")) {
-            socket.emit('adminAction', { action: 'RESET_ALL', password: "spices_admin_2026" });
-        }
+    function setVideo() {
+        const url = document.getElementById('videoUrl').value;
+        socket.emit('updateVideo', { url: url, password: "spices_admin_2026" });
+        alert("Video Stream Updated for all Bidders!");
     }
-
-    document.getElementById('csvFile').addEventListener('change', function(e) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const rows = ev.target.result.split('\n').slice(1);
-            const list = rows.map(r => {
-                const c = r.split(',');
-                return { lotNumber: c[0]?.trim(), weight: parseFloat(c[1]), startPrice: parseInt(c[2]) };
-            }).filter(i => i.lotNumber);
-            socket.emit('uploadCatalogue', { list, password: "spices_admin_2026" });
-        };
-        reader.readAsText(e.target.files[0]);
-    });
 </script>
-</body>
-</html>
