@@ -1,25 +1,32 @@
 <style>
-    .leaderboard { margin-top: 20px; width: 100%; max-width: 500px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    .leader-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .history-card { margin-top: 20px; width: 100%; max-width: 500px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+    th, td { border-bottom: 1px solid #eee; padding: 10px; text-align: left; }
+    th { color: #7f8c8d; font-weight: normal; }
 </style>
 
-<div class="leaderboard">
-    <h3>🏆 Live Leaderboard</h3>
-    <div id="leaderboard-list">Waiting for bids...</div>
+<div class="history-card">
+    <h3>🕒 Last 5 Sales</h3>
+    <table>
+        <thead>
+            <tr><th>Lot</th><th>Buyer</th><th>Rate</th></tr>
+        </thead>
+        <tbody id="sales-history">
+            <tr><td colspan="3" style="text-align:center">No sales yet</td></tr>
+        </tbody>
+    </table>
 </div>
 
 <script>
-    // Add this inside your socket.on('updateBid') function
+    // Add this inside your existing socket.on('updateBid') function
     socket.on('updateBid', (data) => {
-        // ... existing display updates ...
+        // ... (your existing code for timer and current lot)
         
-        // Update Leaderboard Logic
-        if (data.leaderboard) {
-            let html = '';
-            data.leaderboard.forEach(entry => {
-                html += `<div class="leader-row"><span>${entry.name}</span><strong>${entry.lots} Lots</strong></div>`;
-            });
-            document.getElementById('leaderboard-list').innerHTML = html;
+        if (data.history) {
+            const historyHtml = data.history.slice(0, 5).map(s => 
+                `<tr><td>${s.lot}</td><td>${s.buyer}</td><td>₹${s.rate}</td></tr>`
+            ).join('');
+            document.getElementById('sales-history').innerHTML = historyHtml;
         }
     });
 </script>
