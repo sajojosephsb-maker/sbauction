@@ -1,37 +1,74 @@
 <style>
-    .video-container {
-        width: 100%;
-        background: #000;
+    .credit-monitor {
+        background: white;
+        padding: 15px;
         border-radius: 10px;
         margin-bottom: 20px;
-        aspect-ratio: 16 / 9;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    .progress-container {
+        background: #eee;
+        height: 12px;
+        border-radius: 6px;
         overflow: hidden;
-        border: 2px solid #2e7d32;
-        position: relative;
+        margin-top: 8px;
     }
-    .video-overlay-text {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: rgba(211, 47, 47, 0.8);
-        color: white;
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 0.7em;
-        font-weight: bold;
-        animation: blinker 1.5s linear infinite;
+    #credit-progress-fill {
+        background: #2e7d32;
+        height: 100%;
+        width: 0%;
+        transition: width 0.5s ease;
     }
-    @keyframes blinker { 50% { opacity: 0; } }
 </style>
 
-<div class="video-container">
-    <div class="video-overlay-text">● LIVE FROM PUTTADY CENTER</div>
-    <iframe 
-        width="100%" 
-        height="100%" 
-        src="https://www.youtube.com/embed/live_stream?channel=YOUR_CHANNEL_ID" 
-        frameborder="0" 
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-        allowfullscreen>
-    </iframe>
+<div class="credit-monitor">
+    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+        <span><b>Credit Usage</b></span>
+        <span id="credit-text">₹0 / ₹10,00,000</span>
+    </div>
+    <div class="progress-container">
+        <div id="credit-progress-fill"></div>
+    </div>
 </div>
+
+<script>
+    // Function to calculate total spent from the local dashboard history
+    function calculateCurrentSpent() {
+        const history = JSON.parse(localStorage.getItem('mySpiceWins') || "[]");
+        return history.reduce((total, win) => total + (win.price * win.specs.totalWeight), 0);
+    }
+
+    function updateCreditUI() {
+        const spent = calculateCurrentSpent();
+        const limit = 1000000;
+        const percentage = Math.min((spent / limit) * 100, 100);
+        
+        document.getElementById('credit-text').innerText = `₹${spent.toLocaleString('en-IN')} / ₹${limit.toLocaleString('en-IN')}`;
+        const fill = document.getElementById('credit-progress-fill');
+        fill.style.width = percentage + "%";
+
+        // Change color based on usage
+        if (percentage > 90) fill.style.background = "#d32f2f"; // Red
+        else if (percentage > 70) fill.style.background = "#f39c12"; // Orange
+    }
+
+    // Call this whenever a bid is placed or the page loads
+    socket.on('updateBid', (data) => {
+        // ... existing update logic
+        updateCreditUI();
+    });
+
+    // Modified placeBid to send currentSpent to server
+    function placeBid() {
+        const val = parseInt(document.getElementById('bid-input').value);
+        if (val > currentBid) {
+            socket.emit('placeBid', { 
+                amount: val, 
+                bidderName: myName,
+                currentSpent: calculateCurrentSpent() 
+            });
+            document.getElementById('bid-input').value = '';
+        }
+    }
+</script>
