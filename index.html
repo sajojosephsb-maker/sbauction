@@ -1,28 +1,20 @@
-<button onclick="generateBill('LOT-101')" style="background: #000; color: white; padding: 5px;">🖨️ Print Bill</button>
+<button onclick="exportToExcel()" style="background: #1b5e20; color: white; padding: 15px; border-radius: 5px; cursor: pointer;">
+    📥 Download Today's Sales (Excel)
+</button>
 
+<script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
 <script>
-    function generateBill(lotId) {
+    function exportToExcel() {
         const pass = document.getElementById('admin-pass').value;
-        socket.emit('requestInvoice', { lotId: lotId, password: pass });
+        socket.emit('adminAction', { action: 'EXPORT_DATA', password: pass });
     }
 
-    socket.on('printInvoice', (data) => {
-        const invoiceWindow = window.open('', '_blank');
-        invoiceWindow.document.write(`
-            <div style="font-family: Arial; padding: 40px; border: 1px solid #000;">
-                <h2 style="text-align:center;">OFFICIAL AUCTION INVOICE</h2>
-                <hr>
-                <p><strong>Lot Number:</strong> ${data.lot}</p>
-                <p><strong>Purchaser:</strong> ${data.buyer}</p>
-                <p><strong>Rate:</strong> ₹${data.rate}</p>
-                <hr>
-                <p>Market Value: ₹${(data.rate * 600).toLocaleString()}</p>
-                <p>Commission (1%): ₹${(data.rate * 600 * 0.01).toLocaleString()}</p>
-                <p>GST (5%): ₹${(data.rate * 600 * 1.01 * 0.05).toLocaleString()}</p>
-                <h3 style="background:#eee; padding:10px;">Total Payable: ₹${data.totalValue}</h3>
-                <p style="margin-top:50px; text-align:right;">Authorized Signature</p>
-            </div>
-        `);
-        invoiceWindow.print();
+    socket.on('downloadExcel', (data) => {
+        if (data.length === 0) return alert("No sales recorded yet!");
+        
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Sales");
+        XLSX.writeFile(workbook, `Auction_Report_${new Date().toLocaleDateString()}.xlsx`);
     });
 </script>
