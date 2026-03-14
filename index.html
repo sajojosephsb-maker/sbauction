@@ -1,8 +1,9 @@
-<button onclick="logout()" style="background: #666; color: white; margin-top: 20px;">Logout</button>
-
 <script>
-    function logout() {
-        localStorage.removeItem("adminLoggedIn");
+    // Security Guard: Check if Admin is logged in
+    if (localStorage.getItem("adminLoggedIn") !== "true") {
         window.location.href = "login.html";
     }
+
+    const socket = io("https://spice-auction-server.onrender.com");
+    // ... Copy the UI and Socket logic from my previous response here ...
 </script>
