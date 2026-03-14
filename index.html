@@ -1,38 +1,59 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .chart-container {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin-top: 30px;
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+</style>
+
+<div class="chart-container">
+    <h3 style="color: #2e7d32; margin-top: 0;">Session Price Trends</h3>
+    <canvas id="trendChart"></canvas>
+</div>
+
 <script>
-    // This function checks the 'My Purchase History' we built earlier
-    function getSessionSpentTotal() {
-        const history = JSON.parse(localStorage.getItem('mySpiceWins') || "[]");
-        // Sum up (Price * Weight) for every item won in this session
-        return history.reduce((sum, item) => sum + (item.price * item.specs.totalWeight), 0);
+    let trendChart;
+
+    function initChart() {
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        trendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], // Lot numbers go here
+                datasets: [{
+                    label: 'Price (₹/kg)',
+                    data: [], // Prices go here
+                    borderColor: '#2e7d32',
+                    backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: false, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
     }
 
-    // Refresh the Credit UI every time the auction state changes
-    socket.on('updateBid', (data) => {
-        // ... (existing update logic)
+    // Listen for history updates from the server
+    socket.on('updateHistory', (history) => {
+        if (!trendChart) initChart();
         
-        const spent = getSessionSpentTotal();
-        const limit = 1000000;
-        const usagePercent = (spent / limit) * 100;
-
-        document.getElementById('spent-display').innerText = spent.toLocaleString('en-IN');
-        const bar = document.getElementById('progress-fill');
-        bar.style.width = usagePercent + "%";
-        
-        // Color coding for safety
-        if (usagePercent > 90) bar.style.background = "#d32f2f"; // Danger
-        else if (usagePercent > 70) bar.style.background = "#f39c12"; // Warning
+        trendChart.data.labels = history.map(h => h.label);
+        trendChart.data.datasets[0].data = history.map(h => h.price);
+        trendChart.update();
     });
 
-    function placeBid() {
-        const val = parseInt(document.getElementById('bid-input').value);
-        if (val > currentBid) {
-            socket.emit('placeBid', { 
-                amount: val, 
-                bidderName: myName,
-                // CRITICAL: Send the total of all previously won lots
-                currentSpent: getSessionSpentTotal() 
-            });
-            document.getElementById('bid-input').value = '';
-        }
-    }
+    initChart(); // Initialize on page load
 </script>
