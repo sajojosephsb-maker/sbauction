@@ -4,8 +4,8 @@
     <title>Bidder Registration</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        body { font-family: sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .reg-card { background: white; padding: 40px; border-radius: 12px; width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        body { font-family: sans-serif; background: #2c3e50; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .reg-card { background: white; color: #333; padding: 30px; border-radius: 12px; width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
         .btn { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .success-box { display: none; background: #d4edda; color: #155724; padding: 15px; border-radius: 6px; margin-top: 15px; }
@@ -18,7 +18,6 @@
             <input type="text" id="newName" placeholder="Enter Your Full Name">
             <button class="btn" onclick="register()">Get Bidder ID</button>
         </div>
-        
         <div id="success-box" class="success-box">
             <p>Registration Successful!</p>
             <h3 id="displayId"></h3>
@@ -29,13 +28,11 @@
 
     <script>
         const socket = io("https://spice-auction-server.onrender.com");
-
         function register() {
             const name = document.getElementById('newName').value;
             if(name.length < 3) return alert("Enter valid name");
             socket.emit('registerUser', { name: name });
         }
-
         socket.on('registrationSuccess', (data) => {
             document.getElementById('reg-form').style.display = 'none';
             document.getElementById('success-box').style.display = 'block';
