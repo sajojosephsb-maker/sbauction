@@ -1,16 +1,68 @@
-<div style="display: flex; gap: 10px; margin-top: 15px;">
-    <button onclick="quickBid(10)" style="flex:1; padding:10px; background:#f4f4f4;">+10</button>
-    <button onclick="quickBid(50)" style="flex:1; padding:10px; background:#f4f4f4;">+50</button>
-    <button onclick="quickBid(100)" style="flex:1; padding:10px; background:#f4f4f4;">+100</button>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spice Auction Admin</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .btn-green { background: #28a745; color: white; }
+        .btn-blue { background: #007bff; color: white; }
+        .quick-bids { display: flex; gap: 10px; margin-top: 15px; }
+        .quick-bids button { flex: 1; padding: 10px; background: #e9ecef; border: 1px solid #ced4da; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Auction Admin Control</h2>
+    <div id="status-box">
+        <p><strong>Current Lot:</strong> <span id="current-lot">IDLE</span></p>
+        <p><strong>Highest Bid:</strong> ₹<span id="highest-bid">0</span></p>
+        <p><strong>Bidder:</strong> <span id="highest-bidder">No Bids</span></p>
+        <p><strong>Timer:</strong> <span id="timer">0</span>s</p>
+    </div>
+
+    <hr>
+
+    <div class="quick-bids">
+        <button onclick="quickBid(10)">+₹10</button>
+        <button onclick="quickBid(50)">+₹50</button>
+        <button onclick="quickBid(100)">+₹100</button>
+    </div>
+
+    <button class="btn btn-blue" onclick="uploadData()">1. Upload CSV Catalogue</button>
+    <button class="btn btn-green" onclick="acceptSale()">2. ✅ ACCEPT & START NEXT LOT</button>
 </div>
 
 <script>
+    const socket = io("https://spice-auction-server.onrender.com");
+    const pass = "spices_admin_2026";
+
+    socket.on('updateBid', (data) => {
+        document.getElementById('current-lot').innerText = data.currentLot;
+        document.getElementById('highest-bid').innerText = data.highestBid;
+        document.getElementById('highest-bidder').innerText = data.highestBidder;
+        document.getElementById('timer').innerText = data.timeLeft;
+    });
+
     function quickBid(increment) {
-        const currentAmount = parseInt(document.getElementById('highest-bid').innerText) || 0;
-        const newAmount = currentAmount + increment;
-        const bidder = prompt("Bidder Name?");
-        if (bidder) {
-            socket.emit('placeBid', { amount: newAmount, bidderName: bidder });
+        const current = parseInt(document.getElementById('highest-bid').innerText);
+        const name = prompt("Enter Bidder Name:");
+        if (name) {
+            socket.emit('placeBid', { amount: current + increment, bidderName: name });
         }
     }
+
+    function acceptSale() {
+        socket.emit('adminAction', { action: 'ACCEPT_AND_NEXT', password: pass });
+    }
+
+    function uploadData() {
+        // This is where you'd trigger your CSV parser logic
+        alert("Ready to upload! Ensure your CSV matches: lotNumber, weight, startPrice");
+    }
 </script>
+</body>
+</html>
