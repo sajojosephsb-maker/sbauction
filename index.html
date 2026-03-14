@@ -1,30 +1,13 @@
-<div style="background: #fdfefe; padding: 15px; border: 1px solid #ccc; margin-top: 10px;">
-    <button onclick="downloadSampleCSV()" style="background: #607d8b; color: white;">
-        📄 Download Sample.csv
-    </button>
-
-    <button onclick="withdrawCurrentLot()" style="background: #d32f2f; color: white; margin-left: 10px;">
-        🚫 Withdraw Current Lot
-    </button>
+<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 10px;">
+    <button onclick="adminCmd('OPEN_BIDS')" style="background:green; color:white;">🔓 Open Bidding</button>
+    <button onclick="adminCmd('CLOSE_BIDS')" style="background:orange; color:white;">🔒 Lock Bidding</button>
+    <button onclick="adminCmd('RERUN_LOT')" style="background:blue; color:white;">🔄 Re-run Lot</button>
+    <button onclick="adminCmd('WITHDRAW_LOT')" style="background:red; color:white;">🚫 Withdraw Lot</button>
 </div>
 
 <script>
-    function downloadSampleCSV() {
-        const csvContent = "lotNumber,startPrice,weight,colour,size,moisture\nLOT-101,1450,600,Deep Green,8mm,10.5%\nLOT-102,1380,590,Green,7.5mm,11%";
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'sample_catalogue.csv';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-    }
-
-    function withdrawCurrentLot() {
+    function adminCmd(action) {
         const pass = document.getElementById('admin-pass').value;
-        if(confirm("Withdraw this lot? This will cancel the current sale.")) {
-            socket.emit('adminAction', { action: 'WITHDRAW_LOT', password: pass });
-        }
+        socket.emit('adminAction', { action: action, password: pass });
     }
 </script>
