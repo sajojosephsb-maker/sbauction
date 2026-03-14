@@ -1,29 +1,13 @@
-<style>
-    @keyframes bidding-flash {
-        0% { background-color: white; }
-        50% { background-color: #ffebee; border: 2px solid #d32f2f; }
-        100% { background-color: white; }
-    }
-    .bidding-war { animation: bidding-flash 0.5s ease-in-out; }
-</style>
+<div style="display: flex; justify-content: space-around; background: #263238; color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-family: monospace;">
+    <div>📈 SESSION HIGH: <span id="stat-high" style="color: #4caf50;">₹0</span></div>
+    <div>📉 SESSION LOW: <span id="stat-low" style="color: #ff5252;">₹0</span></div>
+    <div>⚖️ AVG RATE: <span id="stat-avg" style="color: #2196f3;">₹0</span></div>
+</div>
 
 <script>
-    let lastBidTime = 0;
-
-    socket.on('updateBid', (data) => {
-        const currentTime = Date.now();
-        const auctionContainer = document.getElementById('auction-container');
-
-        // If a bid happens within 3 seconds of the last one
-        if (currentTime - lastBidTime < 3000) {
-            auctionContainer.classList.add('bidding-war');
-            setTimeout(() => auctionContainer.classList.remove('bidding-war'), 500);
-            
-            // Optional: Play a "Gavel" or "Success" sound
-            new Audio('https://actions.google.com/sounds/v1/foley/wooden_clack.ogg').play();
-        }
-        
-        lastBidTime = currentTime;
-        updateUI(data); // Your existing UI update function
+    socket.on('updateGlobalStats', (stats) => {
+        document.getElementById('stat-high').innerText = "₹" + stats.high;
+        document.getElementById('stat-low').innerText = "₹" + stats.low;
+        document.getElementById('stat-avg').innerText = "₹" + stats.avg;
     });
 </script>
