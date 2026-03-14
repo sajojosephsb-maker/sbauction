@@ -1,10 +1,25 @@
-<div style="border: 2px solid #2e7d32; border-radius: 8px; overflow: hidden;">
-    <div style="background: #2e7d32; color: white; padding: 5px; font-size: 12px;">LIVE SAMPLE VIEW</div>
-    <img id="buyer-video-feed" style="width: 100%; height: auto; background: #000;">
+<div style="background: #f3e5f5; padding: 20px; border: 2px solid #7b1fa2; border-radius: 10px; margin-top: 20px;">
+    <h3 style="color: #7b1fa2; margin-top: 0;">👥 Bidder ID Management</h3>
+    <input type="text" id="new-bid-id" placeholder="ID (e.g. BID101)">
+    <input type="text" id="new-bid-name" placeholder="Bidder/Company Name">
+    <input type="password" id="new-bid-pass" placeholder="Password">
+    
+    <div style="margin-top: 10px;">
+        <button onclick="manageUser('CREATE_USER')" style="background: #7b1fa2; color: white;">Create ID</button>
+        <button onclick="manageUser('EDIT_USER')" style="background: #4a148c; color: white;">Update Password</button>
+    </div>
 </div>
 
 <script>
-    socket.on('liveVideoFrame', (frame) => {
-        document.getElementById('buyer-video-feed').src = frame;
-    });
+    function manageUser(action) {
+        const pass = document.getElementById('admin-pass').value;
+        socket.emit('adminAction', {
+            action: action,
+            bidId: document.getElementById('new-bid-id').value,
+            bidName: document.getElementById('new-bid-name').value,
+            bidPass: document.getElementById('new-bid-pass').value,
+            password: pass
+        });
+        alert("User records updated on server.");
+    }
 </script>
