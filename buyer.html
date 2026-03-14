@@ -1,38 +1,45 @@
-<div style="max-width: 400px; margin: auto; font-family: sans-serif; text-align: center;">
-    <h2 id="lot-title">LOT: ---</h2>
-    
-    <img id="lot-image" src="loading.jpg" style="width: 100%; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-    
-    <div style="display: flex; justify-content: space-around; background: #f0f0f0; padding: 10px; margin: 15px 0;">
-        <span>🎨 <b id="color-val">-</b></span>
-        <span>📏 <b id="size-val">-</b></span>
-        <span>💧 <b id="moist-val">-</b></span>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bidder Terminal</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #2c3e50; color: white; display: flex; justify-content: center; padding: 20px; }
+        .bid-card { background: #34495e; padding: 30px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; }
+        .price { font-size: 3.5rem; color: #2ecc71; margin: 20px 0; }
+        .bid-btn { background: #e67e22; color: white; font-size: 2rem; padding: 20px; border: none; border-radius: 10px; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="bid-card">
+        <h2 id="lot-display">WAITING...</h2>
+        <div class="price" id="price-display">₹0</div>
+        <p>Highest Bidder: <span id="bidder-display">-</span></p>
+        <button class="bid-btn" onclick="placeBid()">PLACE BID (+₹50)</button>
+        <p style="margin-top: 20px; font-size: 0.8rem;">Logged in as: <strong id="my-id"></strong></p>
     </div>
-
-    <div style="font-size: 32px; font-weight: bold; color: #d32f2f;">
-        ₹<span id="price-display">0</span>
-    </div>
-    
-    <button onclick="placeQuickBid()" style="width: 100%; padding: 20px; font-size: 24px; background: #2e7d32; color: white; border: none; border-radius: 50px; margin-top: 20px;">
-        PLACE BID (+₹10)
-    </button>
-</div>
 
 <script>
-    socket.on('updateBid', (state) => {
-        document.getElementById('lot-title').innerText = state.currentLot;
-        document.getElementById('lot-image').src = state.imageUrl;
-        document.getElementById('price-display').innerText = state.highestBid;
-        document.getElementById('color-val').innerText = state.specs.color;
-        document.getElementById('size-val').innerText = state.specs.size;
-        document.getElementById('moist-val').innerText = state.specs.moisture;
+    const bidderId = localStorage.getItem("bidderId");
+    if (!bidderId) window.location.href = "bidder-login.html";
+    document.getElementById('my-id').innerText = bidderId;
+
+    const socket = io("https://spice-auction-server.onrender.com");
+    let currentPrice = 0;
+
+    socket.on('updateBid', (data) => {
+        currentPrice = data.highestBid;
+        document.getElementById('lot-display').innerText = data.currentLot;
+        document.getElementById('price-display').innerText = "₹" + currentPrice;
+        document.getElementById('bidder-display').innerText = data.highestBidder;
     });
 
-    function placeQuickBid() {
-        const currentPrice = parseInt(document.getElementById('price-display').innerText);
+    function placeBid() {
         socket.emit('placeBid', { 
-            amount: currentPrice + 10, 
-            bidderName: window.myName 
+            userId: bidderId, 
+            amount: currentPrice + 50 
         });
     }
 </script>
+</body>
+</html>
