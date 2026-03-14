@@ -1,12 +1,16 @@
-<button onclick="acceptAndNext()" style="background: #2e7d32; color: white; padding: 15px; font-weight: bold; width: 100%; border-radius: 5px; margin-top: 10px;">
-    ✅ ACCEPT & START NEXT LOT
-</button>
+<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
+    <button onclick="quickBid(10)" style="background:#fff; color:#333; border:1px solid #ccc;">+₹10</button>
+    <button onclick="quickBid(50)" style="background:#fff; color:#333; border:1px solid #ccc;">+₹50</button>
+    <button onclick="quickBid(100)" style="background:#fff; color:#333; border:1px solid #ccc;">+₹100</button>
+</div>
 
 <script>
-    function acceptAndNext() {
-        const pass = document.getElementById('admin-pass').value;
-        if(confirm("Accept current bid and move to next lot?")) {
-            socket.emit('adminAction', { action: 'ACCEPT_AND_NEXT', password: pass });
+    function quickBid(addAmount) {
+        const currentPrice = parseInt(document.getElementById('current-price').innerText);
+        const newBid = currentPrice + addAmount;
+        const bidder = prompt("Enter Bidder Name:");
+        if (bidder) {
+            socket.emit('placeBid', { amount: newBid, bidderName: bidder });
         }
     }
 </script>
