@@ -1,41 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Bidder Terminal</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #2c3e50; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .card { background: #34495e; padding: 40px; border-radius: 20px; text-align: center; width: 90%; max-width: 450px; }
-        .price { font-size: 5rem; color: #2ecc71; margin: 10px 0; }
-        .bid-btn { background: #e67e22; color: white; font-size: 2rem; padding: 30px; border: none; border-radius: 15px; cursor: pointer; width: 100%; box-shadow: 0 8px 0 #d35400; }
-        .bid-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #d35400; }
-        .hint { margin-top: 15px; color: #95a5a6; font-size: 0.8rem; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h2 id="lot">WAITING...</h2>
-        <div class="price" id="price">₹0</div>
-        <p>Highest: <span id="bidder">-</span></p>
-        <button class="bid-btn" onclick="placeBid()">PLACE BID (+₹50)</button>
-        <div class="hint">PC: Press <b>SPACE</b> or <b>ENTER</b> to bid</div>
-    </div>
+<div id="video-container" style="display:none; margin-bottom: 15px;">
+    <iframe id="live-webcam" width="100%" height="200" src="" frameborder="0" allowfullscreen></iframe>
+</div>
 
 <script>
-    const socket = io("https://spice-auction-server.onrender.com");
-    const bId = localStorage.getItem("bidderId");
-    if(!bId) window.location.href = "bidder-login.html";
-
-    let curP = 0;
-    socket.on('updateBid', d => {
-        curP = d.highestBid;
-        document.getElementById('lot').innerText = "Lot: " + d.currentLot;
-        document.getElementById('price').innerText = "₹" + curP;
-        document.getElementById('bidder').innerText = d.highestBidder;
+    socket.on('updateBid', (data) => {
+        // ... existing display updates ...
+        if (data.videoUrl) {
+            document.getElementById('video-container').style.display = 'block';
+            document.getElementById('live-webcam').src = data.videoUrl;
+        }
     });
-
-    function placeBid() { socket.emit('placeBid', { userId: bId, amount: curP + 50 }); }
-    window.onkeydown = e => { if(e.code==="Space" || e.code==="Enter") placeBid(); };
 </script>
-</body>
-</html>
