@@ -1,9 +1,17 @@
-<div id="admin-stats" style="background: #333; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-    <span>👥 Live Participants: <strong id="live-count">0</strong></span>
+<div style="margin-top: 20px; border: 1px dashed #333; padding: 10px;">
+    <input type="text" id="broadcast-msg" placeholder="Enter announcement..." style="width: 70%;">
+    <button onclick="sendBroadcast()" style="background: #ffa000; color: black;">📢 Broadcast</button>
 </div>
 
 <script>
-    socket.on('updateParticipantCount', (count) => {
-        document.getElementById('live-count').innerText = count;
+    function sendBroadcast() {
+        const msg = document.getElementById('broadcast-msg').value;
+        const pass = document.getElementById('admin-pass').value;
+        socket.emit('adminBroadcast', { message: msg, password: pass });
+    }
+
+    socket.on('showAnnouncement', (msg) => {
+        // This creates a popup for every single user
+        alert("📢 ADMIN ANNOUNCEMENT: " + msg);
     });
 </script>
