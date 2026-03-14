@@ -1,19 +1,45 @@
-<script>
-    socket.on('updateActiveUsers', (users) => {
-        const list = document.getElementById('active-users-list');
-        list.innerHTML = users.map(user => `
-            <tr>
-                <td>${user.id}</td>
-                <td>${user.name}</td>
-                <td><button onclick="kickUser('${user.id}')" style="background:red; color:white; border:none; cursor:pointer;">KICK</button></td>
-            </tr>
-        `).join('');
-    });
+<div style="background: #fff; padding: 20px; border: 2px dashed #2e7d32; border-radius: 10px; margin-bottom: 20px;">
+    <h3>📊 Catalogue & Reports</h3>
+    
+    <label>Step 1: Upload Catalogue (CSV)</label><br>
+    <input type="file" id="csv-upload" accept=".csv" style="margin: 10px 0;">
+    <button onclick="handleUpload()" style="background: #2e7d32; color: white;">🚀 Upload to Server</button>
+    
+    <hr>
+    
+    <label>Step 2: Post-Auction Report</label><br>
+    <button onclick="downloadReport()" style="background: #1565c0; color: white; margin-top:10px;">📥 Download Full Sales CSV</button>
+</div>
 
-    function kickUser(bidId) {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<script>
+    function handleUpload() {
+        const file = document.getElementById('csv-upload').files[0];
         const pass = document.getElementById('admin-pass').value;
-        if(confirm(`Are you sure you want to log out ${bidId}?`)) {
-            socket.emit('adminAction', { action: 'KICK_USER', targetId: bidId, password: pass });
-        }
+        if (!file) return alert("Select a CSV file first");
+
+        Papa.parse(file, {
+            header: true,
+            complete: function(results) {
+                socket.emit('uploadCatalogue', { list: results.data, password: pass });
+                alert("Catalogue Uploaded Successfully!");
+            }
+        });
     }
+
+    function downloadReport() {
+        const pass = document.getElementById('admin-pass').value;
+        socket.emit('requestFullReport', { password: pass });
+    }
+
+    socket.on('downloadFullCSV', (data) => {
+        const csv = Papa.unparse(data);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", `Auction_Final_Report_${new Date().toLocaleDateString()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
 </script>
