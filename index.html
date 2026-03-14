@@ -1,17 +1,29 @@
-<div style="margin-top: 20px; border: 1px dashed #333; padding: 10px;">
-    <input type="text" id="broadcast-msg" placeholder="Enter announcement..." style="width: 70%;">
-    <button onclick="sendBroadcast()" style="background: #ffa000; color: black;">📢 Broadcast</button>
-</div>
+<style>
+    @keyframes bidding-flash {
+        0% { background-color: white; }
+        50% { background-color: #ffebee; border: 2px solid #d32f2f; }
+        100% { background-color: white; }
+    }
+    .bidding-war { animation: bidding-flash 0.5s ease-in-out; }
+</style>
 
 <script>
-    function sendBroadcast() {
-        const msg = document.getElementById('broadcast-msg').value;
-        const pass = document.getElementById('admin-pass').value;
-        socket.emit('adminBroadcast', { message: msg, password: pass });
-    }
+    let lastBidTime = 0;
 
-    socket.on('showAnnouncement', (msg) => {
-        // This creates a popup for every single user
-        alert("📢 ADMIN ANNOUNCEMENT: " + msg);
+    socket.on('updateBid', (data) => {
+        const currentTime = Date.now();
+        const auctionContainer = document.getElementById('auction-container');
+
+        // If a bid happens within 3 seconds of the last one
+        if (currentTime - lastBidTime < 3000) {
+            auctionContainer.classList.add('bidding-war');
+            setTimeout(() => auctionContainer.classList.remove('bidding-war'), 500);
+            
+            // Optional: Play a "Gavel" or "Success" sound
+            new Audio('https://actions.google.com/sounds/v1/foley/wooden_clack.ogg').play();
+        }
+        
+        lastBidTime = currentTime;
+        updateUI(data); // Your existing UI update function
     });
 </script>
