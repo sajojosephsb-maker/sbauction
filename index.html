@@ -1,26 +1,37 @@
-<div id="admin-ai-assistant" style="background: #fff3e0; border: 2px solid #ff9800; padding: 15px; margin-top: 20px; border-radius: 8px;">
-    <h4 style="margin: 0; color: #e65100;">🤖 AI Price Assistant</h4>
-    <p id="ai-note" style="font-size: 12px; color: #666;">Analyzing market trends...</p>
-    <div style="font-size: 24px; font-weight: bold; color: #333;">
-        Suggested Opening: <span id="ai-price">₹---</span>
+<div style="background: #e3f2fd; padding: 20px; border: 2px solid #2196f3; border-radius: 10px;">
+    <h3>🕹️ Auction Control Center</h3>
+    
+    <label>Next Lot ID:</label>
+    <input type="text" id="next-lot-id" placeholder="e.g., LOT-102">
+    
+    <label>AI Suggested Start:</label>
+    <input type="number" id="start-price" placeholder="Rate (₹)">
+
+    <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button onclick="sendAdminAction('START_AUCTION')" style="background: #4caf50; color: white;">🚀 START LOT</button>
+        <button onclick="sendAdminAction('CLOSE_MANUAL')" style="background: #ff9800; color: white;">🔨 CLOSE NOW</button>
+        <button onclick="sendAdminAction('WITHDRAW')" style="background: #f44336; color: white;">🚫 WITHDRAW</button>
+        <button onclick="rerunLot()" style="background: #9c27b0; color: white;">🔄 RERUN LOT</button>
     </div>
-    <button onclick="applyAISuggestion()" style="margin-top: 10px; background: #ff9800; color: white; border: none; padding: 8px 15px; cursor: pointer;">
-        Use This Price
-    </button>
 </div>
 
 <script>
-    // Request suggestion when admin opens the panel
-    socket.emit('getAIRecommendation');
+    function sendAdminAction(action) {
+        const pass = document.getElementById('admin-pass').value;
+        const lot = document.getElementById('next-lot-id').value;
+        const price = document.getElementById('start-price').value;
+        
+        socket.emit('adminControl', { 
+            action: action, 
+            password: pass, 
+            lotId: lot, 
+            startPrice: parseFloat(price) 
+        });
+    }
 
-    socket.on('aiSuggestion', (data) => {
-        document.getElementById('ai-price').innerText = "₹" + data.price;
-        document.getElementById('ai-note').innerText = data.note;
-        // Store it temporarily
-        window.currentAISuggestion = data.price;
-    });
-
-    function applyAISuggestion() {
-        document.getElementById('start-bid-input').value = window.currentAISuggestion;
+    function rerunLot() {
+        // Keeps the same Lot ID but resets bidding
+        document.getElementById('start-price').value = "1000"; // Or AI suggested price
+        sendAdminAction('START_AUCTION');
     }
 </script>
