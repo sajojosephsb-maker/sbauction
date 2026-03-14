@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bidder Login | Spice Auction</title>
+    <style>
+        body { font-family: sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 12px; width: 300px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #e67e22; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Bidder Login</h2>
+        <input type="text" id="bidderUser" placeholder="Enter User ID (e.g. BID-001)">
+        <input type="password" id="bidderPass" placeholder="Enter Password">
+        <button onclick="login()">Enter Auction</button>
+        <p id="msg" style="color: red; font-size: 0.8rem;"></p>
+    </div>
+
+    <script>
+        function login() {
+            const user = document.getElementById('bidderUser').value;
+            const pass = document.getElementById('bidderPass').value;
+
+            // Simple validation: Any ID starting with BID and password 'spice123'
+            if (user.startsWith("BID-") && pass === "spice123") {
+                localStorage.setItem("bidderId", user);
+                window.location.href = "buyer.html";
+            } else {
+                document.getElementById('msg').innerText = "Invalid ID or Password!";
+            }
+        }
+    </script>
+</body>
+</html>
