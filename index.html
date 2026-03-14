@@ -1,7 +1,9 @@
-function enterAsObserver() {
-    document.getElementById('registration-screen').style.display = 'none';
-    document.getElementById('auction-dashboard').style.display = 'block';
-    // Hide the bidding input for observers
-    document.getElementById('bid-controls').style.display = 'none';
-    document.getElementById('status-msg').innerText = "Viewing as Observer (Read-Only)";
-}
+<div id="admin-stats" style="background: #333; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+    <span>👥 Live Participants: <strong id="live-count">0</strong></span>
+</div>
+
+<script>
+    socket.on('updateParticipantCount', (count) => {
+        document.getElementById('live-count').innerText = count;
+    });
+</script>
