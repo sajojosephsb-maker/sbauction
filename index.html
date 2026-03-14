@@ -1,117 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Spice Auction - Spices Board</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background-color: #f0f4f0; }
-        .container { max-width: 600px; margin: 0 auto; position: relative; }
-        
-        /* Login Overlay */
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2e7d32; z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; color: #333; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        
-        .auction-board { border: 3px solid #2e7d32; background: white; padding: 30px; border-radius: 15px; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .timer-box { font-size: 2.5em; font-weight: bold; color: #d32f2f; }
-        h1 { color: #2e7d32; font-size: 3.5em; margin: 10px 0; }
-        
-        #sold-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.92); z-index: 10; flex-direction: column; justify-content: center; align-items: center; }
-        #sold-overlay h2 { color: #d32f2f; font-size: 3em; transform: rotate(-10deg); border: 5px solid #d32f2f; padding: 10px; }
+<style>
+    /* ... existing styles ... */
+    .specs-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+        text-align: left;
+        font-size: 0.85em;
+    }
+    .spec-item b { color: #2e7d32; display: block; text-transform: uppercase; font-size: 0.75em; }
+</style>
 
-        input { padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin: 5px; }
-        button { padding: 12px 20px; border-radius: 8px; border: none; background: #2e7d32; color: white; cursor: pointer; font-weight: bold; }
-        .btn-admin { background: #1976d2; margin-top: 20px; font-size: 0.8em; opacity: 0.6; }
-    </style>
-</head>
-<body>
-
-    <div id="login-overlay">
-        <div class="login-card">
-            <h2 style="margin-top:0">Buyer Check-in</h2>
-            <p>Please enter your Name or License ID</p>
-            <input type="text" id="username-input" placeholder="e.g. Sajo Traders">
-            <button onclick="saveUser()">Enter Auction</button>
-        </div>
+<div class="auction-board">
+    <div id="sold-overlay"><h2>SOLD!</h2><p id="final-msg"></p></div>
+    
+    <div class="timer-box" id="timer-display">60</div>
+    <div id="lot-name" style="font-weight: bold; font-size: 1.2em; margin-top:10px;">LOT-102 (Green Cardamom)</div>
+    
+    <div class="specs-grid">
+        <div class="spec-item"><b>Quantity</b><span id="spec-qty">-</span></div>
+        <div class="spec-item"><b>Moisture</b><span id="spec-moisture">-</span></div>
+        <div class="spec-item"><b>Size</b><span id="spec-size">-</span></div>
+        <div class="spec-item"><b>Color</b><span id="spec-color">-</span></div>
+        <div class="spec-item"><b>Shape</b><span id="spec-shape">-</span></div>
+        <div class="spec-item"><b>Liter Weight</b><span id="spec-lw">-</span></div>
     </div>
 
-    <div class="container">
-        <div style="display:flex; justify-content: space-between; align-items:center">
-            <p style="font-size:0.8em; color:#666">Logged in as: <b id="display-name">...</b></p>
-            <button onclick="logout()" style="background:none; color:red; font-size:0.7em; padding:0">Logout</button>
-        </div>
+    <h1 id="current-bid">₹0</h1>
+    <p>High Bidder: <strong id="bidder-id">None</strong></p>
+</div>
+
+<script>
+    socket.on('updateBid', (data) => {
+        currentBid = data.highestBid;
+        document.getElementById('lot-name').innerText = data.currentLot;
+        document.getElementById('current-bid').innerText = '₹' + data.highestBid;
+        document.getElementById('bidder-id').innerText = data.highestBidder;
         
-        <div class="auction-board">
-            <div id="sold-overlay"><h2>SOLD!</h2><p id="final-msg"></p></div>
-            <div class="timer-box" id="timer-display">60</div>
-            <div id="lot-name" style="font-weight: bold; color: #666; margin-top:10px;">LOT-102 (Green Cardamom)</div>
-            <h1 id="current-bid">₹0</h1>
-            <p>Highest Bidder: <strong id="bidder-id">None</strong></p>
-        </div>
+        // Update Specifications
+        document.getElementById('spec-qty').innerText = data.specs.quantity;
+        document.getElementById('spec-moisture').innerText = data.specs.moisture;
+        document.getElementById('spec-size').innerText = data.specs.size;
+        document.getElementById('spec-color').innerText = data.specs.color;
+        document.getElementById('spec-shape').innerText = data.specs.shape;
+        document.getElementById('spec-lw').innerText = data.specs.literWeight;
 
-        <div id="bid-controls">
-            <input type="number" id="bid-input" placeholder="Price">
-            <button onclick="placeBid()">Place Bid</button>
-        </div>
-
-        <button class="btn-admin" onclick="socket.emit('adminNextLot')">Admin: Next Lot</button>
-    </div>
-
-    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
-    <script>
-        const socket = io('https://spice-auction-server.onrender.com'); 
-        let currentBid = 0;
-        let myName = localStorage.getItem('spiceBuyerName');
-
-        // Check if user is already "logged in"
-        if (myName) {
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('display-name').innerText = myName;
-        }
-
-        function saveUser() {
-            const name = document.getElementById('username-input').value;
-            if (name.trim().length > 2) {
-                localStorage.setItem('spiceBuyerName', name);
-                location.reload(); // Refresh to apply name
-            } else {
-                alert("Please enter a valid name");
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('spiceBuyerName');
-            location.reload();
-        }
-
-        socket.on('timerUpdate', (time) => { document.getElementById('timer-display').innerText = time; });
-
-        socket.on('updateBid', (data) => {
-            currentBid = data.highestBid;
-            document.getElementById('lot-name').innerText = data.currentLot;
-            document.getElementById('current-bid').innerText = '₹' + data.highestBid;
-            document.getElementById('bidder-id').innerText = data.highestBidder;
-            document.getElementById('sold-overlay').style.display = "none";
-        });
-
-        socket.on('auctionEnded', (data) => {
-            document.getElementById('sold-overlay').style.display = "flex";
-            document.getElementById('final-msg').innerText = `Winner: ${data.highestBidder} at ₹${data.highestBid}`;
-        });
-
-        function placeBid() {
-            const val = parseInt(document.getElementById('bid-input').value);
-            if (val > currentBid) {
-                // Send BOTH the amount and our saved Name
-                socket.emit('placeBid', { 
-                    amount: val, 
-                    bidderName: myName 
-                });
-                document.getElementById('bid-input').value = '';
-            } else {
-                alert("Bid higher than ₹" + currentBid);
-            }
-        }
-    </script>
-</body>
-</html>
+        document.getElementById('sold-overlay').style.display = "none";
+    });
+</script>
