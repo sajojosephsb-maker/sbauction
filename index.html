@@ -1,67 +1,10 @@
-<style>
-    .buyer-dashboard {
-        background: #f1f8e9;
-        border: 2px solid #2e7d32;
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 30px;
-    }
-    .settlement-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-        font-size: 0.9em;
-    }
-    .settlement-table th { background: #2e7d32; color: white; padding: 10px; text-align: left; }
-    .settlement-table td { padding: 10px; border-bottom: 1px solid #c8e6c9; }
-    .total-row { font-weight: bold; background: #dcedc8; }
-</style>
-
-<div class="buyer-dashboard">
-    <h3 style="color: #2e7d32; margin-top: 0;">📊 My Settlement Summary</h3>
-    <table class="settlement-table">
-        <thead>
-            <tr>
-                <th>Lot ID</th>
-                <th>Qty (Kg)</th>
-                <th>Rate</th>
-                <th>Value</th>
-                <th>Comm (1%)</th>
-                <th>Total Bill</th>
-            </tr>
-        </thead>
-        <tbody id="dashboard-rows">
-            </tbody>
-        <tfoot id="dashboard-footer">
-            <tr class="total-row">
-                <td colspan="3">SESSION TOTALS</td>
-                <td id="foot-value">₹0</td>
-                <td id="foot-comm">₹0</td>
-                <td id="foot-grand">₹0</td>
-            </tr>
-        </tfoot>
-    </table>
-</div>
-
-<script>
-    socket.on('newTransaction', (data) => {
-        // Only show data if THIS buyer is the winner
-        if (data.bidder === myName) {
-            const row = `<tr>
-                <td>${data.lot}</td>
-                <td>${data.weight}</td>
-                <td>₹${data.price}</td>
-                <td>₹${data.totalValue.toLocaleString('en-IN')}</td>
-                <td>₹${data.commission.toLocaleString('en-IN')}</td>
-                <td>₹${data.grandTotal.toLocaleString('en-IN')}</td>
-            </tr>`;
-            document.getElementById('dashboard-rows').innerHTML += row;
-            updateDashboardTotals();
-        }
-    });
-
-    function updateDashboardTotals() {
-        // Simple logic to sum up the visible rows for the buyer
-        // ... (Sums value, commission, and grand total)
-    }
-</script>
+function sendWhatsAppReport() {
+    const report = generateEODSummary(); // Using the logic we built
+    const text = `*Auction Summary Report*%0A` +
+                 `Total Revenue: ${report.totalRevenue}%0A` +
+                 `Total Volume: ${report.totalVolume}%0A` +
+                 `Avg Price: ${report.averagePrice}`;
+    
+    // Opens WhatsApp with the text pre-filled
+    window.open(`https://wa.me/91XXXXXXXXXX?text=${text}`, '_blank'); 
+}
