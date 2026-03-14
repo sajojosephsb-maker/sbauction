@@ -1,13 +1,12 @@
-<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 10px;">
-    <button onclick="adminCmd('OPEN_BIDS')" style="background:green; color:white;">🔓 Open Bidding</button>
-    <button onclick="adminCmd('CLOSE_BIDS')" style="background:orange; color:white;">🔒 Lock Bidding</button>
-    <button onclick="adminCmd('RERUN_LOT')" style="background:blue; color:white;">🔄 Re-run Lot</button>
-    <button onclick="adminCmd('WITHDRAW_LOT')" style="background:red; color:white;">🚫 Withdraw Lot</button>
-</div>
+<button onclick="acceptAndNext()" style="background: #2e7d32; color: white; padding: 15px; font-weight: bold; width: 100%; border-radius: 5px; margin-top: 10px;">
+    ✅ ACCEPT & START NEXT LOT
+</button>
 
 <script>
-    function adminCmd(action) {
+    function acceptAndNext() {
         const pass = document.getElementById('admin-pass').value;
-        socket.emit('adminAction', { action: action, password: pass });
+        if(confirm("Accept current bid and move to next lot?")) {
+            socket.emit('adminAction', { action: 'ACCEPT_AND_NEXT', password: pass });
+        }
     }
 </script>
