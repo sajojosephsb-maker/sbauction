@@ -1,25 +1,18 @@
-<div style="background: #e8f5e9; padding: 15px; border: 1px solid #2e7d32; border-radius: 8px; margin-top: 10px;">
-    <h4>💰 Financial & Security Controls</h4>
-    <input type="text" id="target-buyer" placeholder="Buyer Name">
-    <input type="number" id="limit-amount" placeholder="Credit Limit (₹)">
-    
-    <div style="margin-top: 10px;">
-        <button onclick="finAction('SET_CREDIT')" style="background: #2e7d32; color: white;">Set Credit Limit</button>
-        <button onclick="finAction('BAN_BUYER')" style="background: #c62828; color: white;">Ban Buyer</button>
-    </div>
+<div style="background: #1a237e; color: white; padding: 15px; border-radius: 8px; margin-top: 20px;">
+    <h3 style="margin-top: 0; border-bottom: 1px solid #3f51b5;">🏆 Top Buyer Ranking</h3>
+    <ul id="ranking-list" style="list-style: none; padding: 0;">
+        <li style="padding: 5px 0; border-bottom: 1px outline #3f51b5;">Waiting for first sale...</li>
+    </ul>
 </div>
 
 <script>
-    function finAction(action) {
-        const name = document.getElementById('target-buyer').value;
-        const amount = document.getElementById('limit-amount').value;
-        const pass = document.getElementById('admin-pass').value;
-        
-        socket.emit('adminAction', { 
-            action: action, 
-            buyerName: name, 
-            amount: amount, 
-            password: pass 
-        });
-    }
+    socket.on('updateRanking', (data) => {
+        const list = document.getElementById('ranking-list');
+        list.innerHTML = data.map((buyer, index) => `
+            <li style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #3f51b5;">
+                <span>${index + 1}. <strong>${buyer.name}</strong></span>
+                <span>₹${buyer.total.toLocaleString('en-IN')}</span>
+            </li>
+        `).join('');
+    });
 </script>
