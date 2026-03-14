@@ -1,10 +1,8 @@
-<script>
-    // --- SECURITY GUARD ---
-    if (localStorage.getItem("adminLoggedIn") !== "true") {
-        window.location.href = "login.html"; 
-    }
-    // ----------------------
+<button onclick="logout()" style="background: #666; color: white; margin-top: 20px;">Logout</button>
 
-    const socket = io("https://spice-auction-server.onrender.com");
-    // ... rest of your existing code ...
+<script>
+    function logout() {
+        localStorage.removeItem("adminLoggedIn");
+        window.location.href = "login.html";
+    }
 </script>
