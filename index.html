@@ -1,45 +1,30 @@
-<div style="background: #fff; padding: 20px; border: 2px dashed #2e7d32; border-radius: 10px; margin-bottom: 20px;">
-    <h3>📊 Catalogue & Reports</h3>
-    
-    <label>Step 1: Upload Catalogue (CSV)</label><br>
-    <input type="file" id="csv-upload" accept=".csv" style="margin: 10px 0;">
-    <button onclick="handleUpload()" style="background: #2e7d32; color: white;">🚀 Upload to Server</button>
-    
-    <hr>
-    
-    <label>Step 2: Post-Auction Report</label><br>
-    <button onclick="downloadReport()" style="background: #1565c0; color: white; margin-top:10px;">📥 Download Full Sales CSV</button>
+<div style="background: #fdfefe; padding: 15px; border: 1px solid #ccc; margin-top: 10px;">
+    <button onclick="downloadSampleCSV()" style="background: #607d8b; color: white;">
+        📄 Download Sample.csv
+    </button>
+
+    <button onclick="withdrawCurrentLot()" style="background: #d32f2f; color: white; margin-left: 10px;">
+        🚫 Withdraw Current Lot
+    </button>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script>
-    function handleUpload() {
-        const file = document.getElementById('csv-upload').files[0];
-        const pass = document.getElementById('admin-pass').value;
-        if (!file) return alert("Select a CSV file first");
-
-        Papa.parse(file, {
-            header: true,
-            complete: function(results) {
-                socket.emit('uploadCatalogue', { list: results.data, password: pass });
-                alert("Catalogue Uploaded Successfully!");
-            }
-        });
+    function downloadSampleCSV() {
+        const csvContent = "lotNumber,startPrice,weight,colour,size,moisture\nLOT-101,1450,600,Deep Green,8mm,10.5%\nLOT-102,1380,590,Green,7.5mm,11%";
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'sample_catalogue.csv';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
     }
 
-    function downloadReport() {
+    function withdrawCurrentLot() {
         const pass = document.getElementById('admin-pass').value;
-        socket.emit('requestFullReport', { password: pass });
+        if(confirm("Withdraw this lot? This will cancel the current sale.")) {
+            socket.emit('adminAction', { action: 'WITHDRAW_LOT', password: pass });
+        }
     }
-
-    socket.on('downloadFullCSV', (data) => {
-        const csv = Papa.unparse(data);
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", `Auction_Final_Report_${new Date().toLocaleDateString()}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    });
 </script>
