@@ -1,27 +1,26 @@
-<div style="background: #f4f4f4; padding: 20px; border-radius: 10px; border: 2px solid #333;">
-    <h3>🛠️ Manual Auction Controls</h3>
+<div style="background: #f8f9fa; padding: 20px; border: 2px solid #333; border-radius: 8px;">
+    <h3>🔨 Admin Control Console</h3>
     
-    <div style="margin-bottom: 15px;">
-        <button onclick="control('ACCEPT')" style="background: #4caf50; color: white;">✅ ACCEPT BID</button>
-        <button onclick="control('RERUN')" style="background: #2196f3; color: white;">🔄 RERUN LOT</button>
-        <button onclick="control('WITHDRAW')" style="background: #f44336; color: white;">🚫 WITHDRAW</button>
-        <button onclick="control('SKIP')" style="background: #9e9e9e; color: white;">⏭️ SKIP</button>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+        <button onclick="adminBtn('ACCEPT')" style="background: #28a745; color: white; padding: 15px;">✅ ACCEPT</button>
+        <button onclick="adminBtn('RERUN')" style="background: #007bff; color: white; padding: 15px;">🔄 RERUN</button>
+        <button onclick="adminBtn('WITHDRAW')" style="background: #dc3545; color: white; padding: 15px;">🚫 WITHDRAW</button>
+        <button onclick="adminBtn('SKIP')" style="background: #6c757d; color: white; padding: 15px;">⏭️ SKIP</button>
     </div>
 
-    <div style="border-top: 1px solid #ccc; pt: 10px;">
-        <h4 style="color: #d32f2f;">⚠️ Quality Alerts</h4>
-        <button onclick="alertQuality('Artificially Coloured')" style="background: #ffeb3b;">🎨 Artificially Coloured</button>
-        <button onclick="alertQuality('Suspected/Sample Mismatch')" style="background: #ff9800;">🔍 Suspected</button>
+    <div style="background: #fff3cd; padding: 10px; border: 1px solid #ffeeba;">
+        <h4 style="color: #856404; margin-top: 0;">⚠️ Quality Flags</h4>
+        <button onclick="qualityBtn('Artificially Coloured')" style="background: #ffc107;">🎨 Coloured</button>
+        <button onclick="qualityBtn('Suspected Mismatch')" style="background: #fd7e14;">🔍 Suspected</button>
     </div>
 </div>
 
 <script>
-    function control(action) {
+    function adminBtn(act) {
         const pass = document.getElementById('admin-pass').value;
-        socket.emit('adminAction', { action: action, password: pass });
+        socket.emit('adminAction', { action: act, password: pass });
     }
-
-    function alertQuality(note) {
+    function qualityBtn(note) {
         const pass = document.getElementById('admin-pass').value;
         socket.emit('adminAction', { action: 'QUALITY_ALERT', note: note, password: pass });
     }
