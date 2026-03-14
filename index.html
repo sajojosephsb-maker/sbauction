@@ -1,9 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spice Auction Admin</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        .timer { font-size: 3rem; font-weight: bold; color: #e74c3c; margin: 10px 0; }
+        .btn { width: 100%; padding: 15px; margin: 5px 0; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-accept { background: #27ae60; color: white; }
+        .btn-logout { background: #bdc3c7; color: #333; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Auction Controller</h2>
+        <div class="timer" id="timer">00</div>
+        <p>Lot: <strong id="current-lot">IDLE</strong> | Weight: <strong id="weight">0.00</strong> kg</p>
+        <p>Current Bid: <strong id="highest-bid">₹0</strong></p>
+        <p>Buyer: <span id="highest-bidder">No Bids</span></p>
+        
+        <input type="file" id="csvFile" accept=".csv" style="margin: 15px 0;">
+        <button class="btn btn-accept" onclick="acceptSale()">✅ ACCEPT & NEXT LOT</button>
+        <button class="btn btn-logout" onclick="logout()">Logout</button>
+    </div>
+
 <script>
-    // Security Guard: Check if Admin is logged in
+    // --- SECURITY GUARD ---
     if (localStorage.getItem("adminLoggedIn") !== "true") {
         window.location.href = "login.html";
     }
 
     const socket = io("https://spice-auction-server.onrender.com");
-    // ... Copy the UI and Socket logic from my previous response here ...
+    const ADMIN_PASS = "spices_admin_2026";
+
+    socket.on('updateBid', (data) => {
+        document.getElementById('current-lot').innerText = data.currentLot;
+        document.getElementById('weight').innerText = data.weight;
+        document.getElementById('highest-bid').innerText = "₹" + data.highestBid;
+        document.getElementById('highest-bidder').innerText = data.highestBidder;
+        document.getElementById('timer').innerText = data.timeLeft;
+    });
+
+    function acceptSale() {
+        socket.emit('adminAction', { action: 'ACCEPT_AND_NEXT', password: ADMIN_PASS });
+    }
+
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const rows = ev.target.result.split('\n').slice(1);
+            const list = rows.map(r => {
+                const c = r.split(',');
+                return { lotNumber: c[0].trim(), weight: parseFloat(c[1]), startPrice: parseInt(c[2]) };
+            }).filter(i => i.lotNumber);
+            socket.emit('uploadCatalogue', { list, password: ADMIN_PASS });
+        };
+        reader.readAsText(e.target.files[0]);
+    });
+
+    function logout() {
+        localStorage.removeItem("adminLoggedIn");
+        window.location.href = "login.html";
+    }
 </script>
+</body>
+</html>
