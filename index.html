@@ -1,13 +1,28 @@
-<div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
-    <p style="font-size: 0.8rem;">🎥 LIVE STREAM LINK (YouTube/Drive)</p>
-    <input type="text" id="videoUrl" placeholder="Paste Video Link here" style="width:70%; padding:8px;">
-    <button onclick="setVideo()" style="padding:8px; background:#3498db; color:white; border:none; border-radius:4px;">Update</button>
+<div class="card" style="max-width: 600px;">
+    <h3>👥 User Management</h3>
+    <button class="btn" onclick="socket.emit('getUsers')" style="background:#3498db; margin-bottom:10px;">Refresh User List</button>
+    <table style="width:100%; font-size: 0.8rem;">
+        <thead><tr><th>Name</th><th>ID</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="user-table"></tbody>
+    </table>
 </div>
 
 <script>
-    function setVideo() {
-        const url = document.getElementById('videoUrl').value;
-        socket.emit('updateVideo', { url: url, password: "spices_admin_2026" });
-        alert("Video Stream Updated for all Bidders!");
+    socket.on('userList', (users) => {
+        const tbody = document.getElementById('user-table');
+        tbody.innerHTML = users.map(u => `
+            <tr>
+                <td>${u.name}</td>
+                <td>${u.userId}</td>
+                <td style="color:${u.isApproved ? 'green' : 'red'}">${u.isApproved ? 'Approved' : 'Pending'}</td>
+                <td>
+                    ${u.isApproved ? '' : `<button onclick="approve('${u.userId}')" style="font-size:0.7rem;">Approve</button>`}
+                </td>
+            </tr>
+        `).join('');
+    });
+
+    function approve(id) {
+        socket.emit('approveUser', { targetId: id, password: "spices_admin_2026" });
     }
 </script>
