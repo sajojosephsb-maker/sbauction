@@ -1,23 +1,18 @@
-<div style="background: #2c3e50; color: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
-    <h3>📈 Master Report Center</h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <button onclick="getReport('daily')" style="padding: 10px;">Daily Report</button>
-        <button onclick="getReport('weekly')" style="padding: 10px;">Weekly Summary</button>
-        <button onclick="getReport('monthly')" style="padding: 10px;">Monthly GST Report</button>
-        <button onclick="getReport('trader')" style="padding: 10px;">Trader Statement</button>
-    </div>
-</div>
-
-<script>
-    function getReport(type) {
-        const pass = document.getElementById('admin-pass').value;
-        const trader = prompt("Enter Trader Name (Leave blank for full report):");
-        socket.emit('getReport', { type, traderName: trader, password: pass });
+socket.on('sendNotification', (data) => {
+    // Only alert the person who actually won
+    if (myName === data.target) {
+        if (Notification.permission === "granted") {
+            new Notification("🔨 Auction Won!", { body: data.message });
+        } else {
+            alert(data.message);
+        }
+        
+        // Optional: Auto-open WhatsApp with the summary
+        // window.open(`https://wa.me/919400000000?text=${encodeURIComponent(data.message)}`);
     }
+});
 
-    socket.on('reportData', (data) => {
-        console.table(data.records);
-        alert(`${data.type.toUpperCase()} Report generated with ${data.records.length} records.`);
-        // Note: You can now map these records to a PDF or CSV file
-    });
-</script>
+// Request permission on page load
+if (Notification.permission !== "denied") {
+    Notification.requestPermission();
+}
