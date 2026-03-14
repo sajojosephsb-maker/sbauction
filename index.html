@@ -29,24 +29,32 @@
         <button onclick="placeMockBid()">Place Bid</button>
     </div>
 
-    <script>
-        // Note: This is currently a mocked frontend for GitHub Pages.
-        // Once the Node.js backend is deployed, we will connect Socket.io here.
-        let currentBid = 1450;
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+<script>
+    // REPLACE this URL with your actual Render URL
+    const socket = io('https://YOUR-RENDER-URL.onrender.com'); 
 
-        function placeMockBid() {
-            const inputField = document.getElementById('bid-input');
-            const newBid = parseInt(inputField.value);
+    let currentBid = 0;
 
-            if (newBid > currentBid) {
-                currentBid = newBid;
-                document.getElementById('current-bid').innerText = '₹' + currentBid;
-                document.getElementById('bidder-id').innerText = 'You (Mock User)';
-                inputField.value = '';
-            } else {
-                alert("Your bid must be higher than the current price!");
-            }
+    // Listen for real-time updates from the server
+    socket.on('updateBid', (data) => {
+        currentBid = data.highestBid;
+        document.getElementById('current-bid').innerText = '₹' + data.highestBid;
+        document.getElementById('bidder-id').innerText = data.highestBidder;
+    });
+
+    // Send a bid to the server
+    function placeMockBid() {
+        const inputField = document.getElementById('bid-input');
+        const newBid = parseInt(inputField.value);
+
+        if (newBid > currentBid) {
+            socket.emit('placeBid', { amount: newBid });
+            inputField.value = '';
+        } else {
+            alert("Your bid must be higher than the current price!");
         }
-    </script>
+    }
+</script>
 </body>
 </html>
