@@ -1,27 +1,28 @@
-<div style="background: #f8f9fa; padding: 20px; border: 2px solid #333; border-radius: 8px;">
-    <h3>🔨 Admin Control Console</h3>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-        <button onclick="adminBtn('ACCEPT')" style="background: #28a745; color: white; padding: 15px;">✅ ACCEPT</button>
-        <button onclick="adminBtn('RERUN')" style="background: #007bff; color: white; padding: 15px;">🔄 RERUN</button>
-        <button onclick="adminBtn('WITHDRAW')" style="background: #dc3545; color: white; padding: 15px;">🚫 WITHDRAW</button>
-        <button onclick="adminBtn('SKIP')" style="background: #6c757d; color: white; padding: 15px;">⏭️ SKIP</button>
-    </div>
-
-    <div style="background: #fff3cd; padding: 10px; border: 1px solid #ffeeba;">
-        <h4 style="color: #856404; margin-top: 0;">⚠️ Quality Flags</h4>
-        <button onclick="qualityBtn('Artificially Coloured')" style="background: #ffc107;">🎨 Coloured</button>
-        <button onclick="qualityBtn('Suspected Mismatch')" style="background: #fd7e14;">🔍 Suspected</button>
-    </div>
+<div style="background: #fff5f5; padding: 15px; border: 2px solid #c53030; border-radius: 8px; margin-top: 20px;">
+    <h3 style="color: #c53030; margin-top: 0;">🚫 Buyer Management</h3>
+    <input type="text" id="ban-name" placeholder="Enter Bidder Name to Block">
+    <button onclick="manageBuyer('BAN_BUYER')" style="background: #c53030; color: white;">BLOCK BUYER</button>
+    <button onclick="manageBuyer('UNBAN_BUYER')" style="background: #2f855a; color: white;">UNBLOCK</button>
 </div>
 
 <script>
-    function adminBtn(act) {
+    function manageBuyer(action) {
+        const name = document.getElementById('ban-name').value;
         const pass = document.getElementById('admin-pass').value;
-        socket.emit('adminAction', { action: act, password: pass });
+        if (!name) return alert("Enter a name");
+        
+        socket.emit('adminAction', { 
+            action: action, 
+            buyerName: name, 
+            password: pass 
+        });
+        alert(`Action ${action} sent for: ${name}`);
     }
-    function qualityBtn(note) {
-        const pass = document.getElementById('admin-pass').value;
-        socket.emit('adminAction', { action: 'QUALITY_ALERT', note: note, password: pass });
-    }
+
+    socket.on('buyerBanned', (data) => {
+        if (window.myName === data.name) {
+            alert("Your bidding privileges have been suspended by the administrator.");
+            location.reload(); // Force refresh to disconnect
+        }
+    });
 </script>
