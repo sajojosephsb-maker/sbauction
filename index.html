@@ -1,25 +1,16 @@
-<div id="inventory-status" style="background: #fff; border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 5px; display: flex; align-items: center; justify-content: space-between;">
-    <span>📦 Catalogue Progress:</span>
-    <div style="width: 60%; background: #eee; height: 10px; border-radius: 5px; overflow: hidden;">
-        <div id="inv-bar" style="width: 0%; height: 100%; background: #4caf50; transition: width 0.5s;"></div>
+<div style="background: #fff3e0; border-left: 5px solid #ff9800; padding: 15px; margin-top: 20px;">
+    <h4>📱 Planter SMS Log</h4>
+    <div id="sms-log" style="font-size: 12px; max-height: 100px; overflow-y: auto;">
+        Waiting for sales...
     </div>
-    <span id="inv-text">0/0</span>
 </div>
 
 <script>
-    socket.on('inventoryAlert', (data) => {
-        // Flash a high-priority notification for the Admin
-        const alertBox = document.createElement('div');
-        alertBox.style = "position:fixed; top:20px; right:20px; background:#d32f2f; color:white; padding:20px; z-index:10000; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.3);";
-        alertBox.innerHTML = `<strong>CATALOGUE ALERT</strong><br>${data.message}`;
-        document.body.appendChild(alertBox);
-        setTimeout(() => alertBox.remove(), 5000);
+    socket.on('auctionEnded', (state) => {
+        if (state.highestBidder !== "No Bids") {
+            const log = document.getElementById('sms-log');
+            const entry = `<div>✅ SMS Sent to ${state.planterMobile}: Lot ${state.currentLot} @ ₹${state.highestBid}</div>`;
+            log.innerHTML = entry + log.innerHTML;
+        }
     });
-
-    // Function to update the progress bar based on lot index
-    function updateInvBar(current, total) {
-        const percent = (current / total) * 100;
-        document.getElementById('inv-bar').style.width = percent + "%";
-        document.getElementById('inv-text').innerText = `${current}/${total}`;
-    }
 </script>
