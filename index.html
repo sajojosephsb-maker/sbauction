@@ -1,23 +1,28 @@
-<div id="credit-status" style="background: #e8f5e9; padding: 10px; border-radius: 8px; border: 1px solid #2e7d32; margin-bottom: 15px; display: none;">
-    <span style="font-weight: bold; color: #2e7d32;">My Credit Limit: </span>
-    <span id="display-limit">₹0</span> | 
-    <span style="font-weight: bold; color: #d32f2f;">Remaining: </span>
-    <span id="display-remaining">₹0</span>
-</div>
+<audio id="warning-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
-    let myCreditLimit = 0;
-    let mySpentAmount = 0;
+    function placeBid() {
+        const bidAmount = parseInt(document.getElementById('bid-input').value);
+        const lotWeight = auctionState.specs.totalWeight;
+        const totalBidValue = bidAmount * lotWeight;
+        
+        // Calculate remaining credit
+        const remainingCredit = myCreditLimit - mySpentAmount;
 
-    socket.on('buyerApproved', (data) => {
-        document.getElementById('credit-status').style.display = 'block';
-        myCreditLimit = data.limit;
-        updateCreditDisplay();
-    });
+        if (totalBidValue > remainingCredit) {
+            // Play warning sound
+            document.getElementById('warning-sound').play();
+            
+            // Visual Alert
+            alert(`⛔ Bid Denied! This bid requires ₹${totalBidValue.toLocaleString('en-IN')}, but you only have ₹${remainingCredit.toLocaleString('en-IN')} credit left.`);
+            return; // Block the bid from being sent to the server
+        }
 
-    function updateCreditDisplay() {
-        const remaining = myCreditLimit - mySpentAmount;
-        document.getElementById('display-limit').innerText = "₹" + myCreditLimit.toLocaleString('en-IN');
-        document.getElementById('display-remaining').innerText = "₹" + remaining.toLocaleString('en-IN');
+        // If credit is okay, send the bid
+        socket.emit('placeBid', {
+            amount: bidAmount,
+            bidderName: myName,
+            currentSpent: mySpentAmount
+        });
     }
 </script>
