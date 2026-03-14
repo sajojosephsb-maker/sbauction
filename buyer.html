@@ -1,45 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Bidder Terminal</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #2c3e50; color: white; display: flex; justify-content: center; padding: 20px; }
-        .bid-card { background: #34495e; padding: 30px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; }
-        .price { font-size: 3.5rem; color: #2ecc71; margin: 20px 0; }
-        .bid-btn { background: #e67e22; color: white; font-size: 2rem; padding: 20px; border: none; border-radius: 10px; cursor: pointer; width: 100%; }
-    </style>
-</head>
-<body>
-    <div class="bid-card">
-        <h2 id="lot-display">WAITING...</h2>
-        <div class="price" id="price-display">₹0</div>
-        <p>Highest Bidder: <span id="bidder-display">-</span></p>
-        <button class="bid-btn" onclick="placeBid()">PLACE BID (+₹50)</button>
-        <p style="margin-top: 20px; font-size: 0.8rem;">Logged in as: <strong id="my-id"></strong></p>
-    </div>
-
-<script>
-    const bidderId = localStorage.getItem("bidderId");
-    if (!bidderId) window.location.href = "bidder-login.html";
-    document.getElementById('my-id').innerText = bidderId;
-
-    const socket = io("https://spice-auction-server.onrender.com");
-    let currentPrice = 0;
-
-    socket.on('updateBid', (data) => {
-        currentPrice = data.highestBid;
-        document.getElementById('lot-display').innerText = data.currentLot;
-        document.getElementById('price-display').innerText = "₹" + currentPrice;
-        document.getElementById('bidder-display').innerText = data.highestBidder;
-    });
-
-    function placeBid() {
-        socket.emit('placeBid', { 
-            userId: bidderId, 
-            amount: currentPrice + 50 
-        });
-    }
-</script>
-</body>
-</html>
+const bidderId = localStorage.getItem("bidderId");
+if (!bidderId) {
+    window.location.href = "bidder-login.html";
+}
