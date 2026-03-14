@@ -1,4 +1,53 @@
-const bidderId = localStorage.getItem("bidderId");
-if (!bidderId) {
-    window.location.href = "bidder-login.html";
-}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bidder Terminal</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #2c3e50; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
+        .bid-card { background: #34495e; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 400px; text-align: center; }
+        .lot-info { font-size: 1.2rem; color: #bdc3c7; margin-bottom: 5px; }
+        .price { font-size: 4rem; font-weight: bold; color: #2ecc71; margin: 20px 0; }
+        .bid-btn { background: #e67e22; color: white; font-size: 1.8rem; padding: 25px; border: none; border-radius: 12px; cursor: pointer; width: 100%; transition: transform 0.1s; }
+        .bid-btn:active { transform: scale(0.95); background: #d35400; }
+        .status { margin-top: 20px; font-size: 0.9rem; color: #95a5a6; }
+    </style>
+</head>
+<body>
+    <div class="bid-card">
+        <div class="lot-info" id="lot-display">WAITING FOR ADMIN...</div>
+        <div class="price" id="price-display">₹0</div>
+        <p>Highest Bidder: <strong id="bidder-display" style="color: #f1c40f;">-</strong></p>
+        <button class="bid-btn" onclick="placeBid()">PLACE BID (+₹50)</button>
+        <div class="status">Logged in as: <strong id="my-id"></strong></div>
+    </div>
+
+<script>
+    // 1. Check Login
+    const bidderId = localStorage.getItem("bidderId");
+    if (!bidderId) {
+        window.location.href = "bidder-login.html";
+    }
+    document.getElementById('my-id').innerText = bidderId;
+
+    // 2. Connect to Server
+    const socket = io("https://spice-auction-server.onrender.com");
+    let currentPrice = 0;
+
+    socket.on('updateBid', (data) => {
+        currentPrice = data.highestBid;
+        document.getElementById('lot-display').innerText = "Lot: " + data.currentLot;
+        document.getElementById('price-display').innerText = "₹" + currentPrice;
+        document.getElementById('bidder-display').innerText = data.highestBidder;
+    });
+
+    // 3. Bid Logic
+    function placeBid() {
+        socket.emit('placeBid', { 
+            userId: bidderId, 
+            amount: currentPrice + 50 
+        });
+    }
+</script>
+</body>
+</html>
