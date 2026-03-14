@@ -1,28 +1,95 @@
-<div class="card" style="max-width: 600px;">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Master Auction Admin</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; margin-bottom: 20px; }
+        .timer { font-size: 3rem; font-weight: bold; color: #e74c3c; margin: 10px 0; }
+        .btn { padding: 10px 15px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
+        th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
+        .pending { color: #e67e22; font-weight: bold; }
+        .approved { color: #27ae60; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Auction Controller</h2>
+    <div class="timer" id="timer">00</div>
+    <p>Lot: <strong id="lot">IDLE</strong> | Price: <strong id="price">₹0</strong> | Bidder: <span id="bidder">-</span></p>
+    <input type="file" id="csvFile" accept=".csv" style="margin-bottom: 10px;">
+    <button class="btn" onclick="nextLot()">✅ ACCEPT & NEXT LOT</button>
+    <button class="btn" onclick="resetAuction()" style="background:#e67e22">🧹 RESET ALL DATA</button>
+    <hr>
+    <input type="text" id="videoUrl" placeholder="Paste Video Link" style="width:70%; padding:8px;">
+    <button onclick="setVideo()" style="padding:8px; background:#3498db; color:white; border:none; border-radius:4px;">Update Video</button>
+</div>
+
+<div class="card">
     <h3>👥 User Management</h3>
-    <button class="btn" onclick="socket.emit('getUsers')" style="background:#3498db; margin-bottom:10px;">Refresh User List</button>
-    <table style="width:100%; font-size: 0.8rem;">
+    <button class="btn" onclick="socket.emit('getUsers')" style="background:#3498db;">Refresh User List</button>
+    <table>
         <thead><tr><th>Name</th><th>ID</th><th>Status</th><th>Action</th></tr></thead>
         <tbody id="user-table"></tbody>
     </table>
 </div>
 
+<div class="card">
+    <h3>🕒 Last 5 Sales</h3>
+    <table id="sales-history"></table>
+    <a href="https://spice-auction-server.onrender.com/download-report" style="display:block; margin-top:15px; color:#3498db; text-decoration:none; font-weight:bold;">📥 Download CSV Report</a>
+</div>
+
+<audio id="bidSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
 <script>
+    const socket = io("https://spice-auction-server.onrender.com");
+    const sound = document.getElementById('bidSound');
+
+    socket.on('updateBid', (data) => {
+        document.getElementById('timer').innerText = data.timeLeft || "00";
+        document.getElementById('lot').innerText = data.currentLot || "IDLE";
+        document.getElementById('price').innerText = "₹" + (data.highestBid || 0);
+        document.getElementById('bidder').innerText = data.highestBidder || "No Bids";
+        if(data.history) {
+            document.getElementById('sales-history').innerHTML = data.history.slice(0,5).map(s => 
+                `<tr><td>Lot ${s.lot}</td><td>${s.buyer}</td><td>₹${s.rate}</td></tr>`
+            ).join('');
+        }
+    });
+
+    socket.on('playBidSound', () => { sound.play().catch(() => {}); });
+
     socket.on('userList', (users) => {
-        const tbody = document.getElementById('user-table');
-        tbody.innerHTML = users.map(u => `
+        document.getElementById('user-table').innerHTML = users.map(u => `
             <tr>
                 <td>${u.name}</td>
                 <td>${u.userId}</td>
-                <td style="color:${u.isApproved ? 'green' : 'red'}">${u.isApproved ? 'Approved' : 'Pending'}</td>
-                <td>
-                    ${u.isApproved ? '' : `<button onclick="approve('${u.userId}')" style="font-size:0.7rem;">Approve</button>`}
-                </td>
+                <td class="${u.isApproved ? 'approved' : 'pending'}">${u.isApproved ? 'Approved' : 'Pending'}</td>
+                <td>${u.isApproved ? '' : `<button onclick="approve('${u.userId}')">Approve</button>`}</td>
             </tr>
         `).join('');
     });
 
-    function approve(id) {
-        socket.emit('approveUser', { targetId: id, password: "spices_admin_2026" });
-    }
+    function nextLot() { socket.emit('adminAction', { password: "spices_admin_2026" }); }
+    function setVideo() { socket.emit('updateVideo', { url: document.getElementById('videoUrl').value, password: "spices_admin_2026" }); }
+    function approve(id) { socket.emit('approveUser', { targetId: id, password: "spices_admin_2026" }); }
+    function resetAuction() { if(confirm("Clear all?")) socket.emit('adminAction', { action: 'RESET_ALL', password: "spices_admin_2026" }); }
+
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const list = ev.target.result.split('\n').slice(1).map(r => {
+                const c = r.split(',');
+                return { lotNumber: c[0]?.trim(), weight: parseFloat(c[1]), startPrice: parseInt(c[2]) };
+            }).filter(i => i.lotNumber);
+            socket.emit('uploadCatalogue', { list, password: "spices_admin_2026" });
+        };
+        reader.readAsText(e.target.files[0]);
+    });
 </script>
+</body>
+</html>
