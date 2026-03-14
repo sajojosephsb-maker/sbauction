@@ -1,67 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Spice Auction Admin & Search</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 500px; margin-bottom: 20px; text-align: center; }
-        input, button { padding: 12px; margin: 5px; border-radius: 5px; border: 1px solid #ddd; }
-        .btn-go { background: #28a745; color: white; width: 100%; font-weight: bold; cursor: pointer; border: none; }
-        .search-res { text-align: left; background: #fff; padding: 10px; border-radius: 5px; }
-    </style>
-</head>
-<body>
-
-<div class="card">
-    <h3>🔍 Auction Search (Google Style)</h3>
-    <input type="text" id="searchInput" placeholder="Search lot or buyer..." style="width: 70%;">
-    <button onclick="searchAuction()">Search</button>
-    <div id="searchResults" class="search-res"></div>
-</div>
-
-<div class="card">
-    <h2>Auction Controller</h2>
-    <div style="font-size: 2rem; color: red;" id="timer">00</div>
-    <p>Lot: <strong id="current-lot">IDLE</strong> | Price: <strong id="highest-bid">₹0</strong></p>
-    <p>Bidder: <span id="highest-bidder">No Bids</span></p>
-    <input type="file" id="csvFile" accept=".csv">
-    <button class="btn-go" onclick="acceptSale()">✅ ACCEPT & NEXT</button>
-</div>
-
 <script>
+    // --- SECURITY GUARD ---
+    if (localStorage.getItem("adminLoggedIn") !== "true") {
+        window.location.href = "login.html"; 
+    }
+    // ----------------------
+
     const socket = io("https://spice-auction-server.onrender.com");
-    
-    socket.on('updateBid', (data) => {
-        document.getElementById('current-lot').innerText = data.currentLot;
-        document.getElementById('highest-bid').innerText = "₹" + data.highestBid;
-        document.getElementById('highest-bidder').innerText = data.highestBidder;
-        document.getElementById('timer').innerText = data.timeLeft;
-    });
-
-    async function searchAuction() {
-        const q = document.getElementById('searchInput').value;
-        const res = await fetch(`https://spice-auction-server.onrender.com/search?q=${q}`);
-        const data = await res.json();
-        document.getElementById('searchResults').innerHTML = data.map(s => `<div>Lot ${s.lot}: ${s.buyer} - ₹${s.rate}</div>`).join('');
-    }
-
-    document.getElementById('csvFile').addEventListener('change', function(e) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const rows = ev.target.result.split('\n').slice(1);
-            const list = rows.map(r => {
-                const c = r.split(',');
-                return { lotNumber: c[0].trim(), weight: parseFloat(c[1]), startPrice: parseInt(c[2]) };
-            }).filter(i => i.lotNumber);
-            socket.emit('uploadCatalogue', { list, password: "spices_admin_2026" });
-        };
-        reader.readAsText(e.target.files[0]);
-    });
-
-    function acceptSale() {
-        socket.emit('adminAction', { action: 'ACCEPT_AND_NEXT', password: "spices_admin_2026" });
-    }
+    // ... rest of your existing code ...
 </script>
-</body>
-</html>
