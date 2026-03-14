@@ -1,40 +1,28 @@
-<div id="catalogue-upload" style="background: #fdfdfd; padding: 20px; border: 1px solid #ddd; margin-top: 20px;">
-    <h3>📋 Catalogue & Lot Specs</h3>
-    <p>Paste your lot data here in the requested format:</p>
-    <textarea id="csv-input" style="width:100%; height:150px;" placeholder="Lot Number	Collection Centre	Planter Name..."></textarea>
-    <button onclick="processCatalogue()" style="background: #1a73e8; color: white; padding: 10px 20px;">Load Catalogue</button>
+<div style="background: #f4f4f4; padding: 20px; border-radius: 10px; border: 2px solid #333;">
+    <h3>🛠️ Manual Auction Controls</h3>
+    
+    <div style="margin-bottom: 15px;">
+        <button onclick="control('ACCEPT')" style="background: #4caf50; color: white;">✅ ACCEPT BID</button>
+        <button onclick="control('RERUN')" style="background: #2196f3; color: white;">🔄 RERUN LOT</button>
+        <button onclick="control('WITHDRAW')" style="background: #f44336; color: white;">🚫 WITHDRAW</button>
+        <button onclick="control('SKIP')" style="background: #9e9e9e; color: white;">⏭️ SKIP</button>
+    </div>
+
+    <div style="border-top: 1px solid #ccc; pt: 10px;">
+        <h4 style="color: #d32f2f;">⚠️ Quality Alerts</h4>
+        <button onclick="alertQuality('Artificially Coloured')" style="background: #ffeb3b;">🎨 Artificially Coloured</button>
+        <button onclick="alertQuality('Suspected/Sample Mismatch')" style="background: #ff9800;">🔍 Suspected</button>
+    </div>
 </div>
 
 <script>
-    function processCatalogue() {
-        const rawData = document.getElementById('csv-input').value;
-        const rows = rawData.split('\n');
-        const lots = rows.map(row => {
-            const cols = row.split('\t'); // Splits by Tab
-            return {
-                lotNumber: cols[0],
-                collectionCentre: cols[1],
-                planterDealer: cols[2],
-                planterName: cols[3],
-                crNo: cols[4],
-                receiptNo: cols[5],
-                quantity: cols[6],
-                litreWeight: cols[7],
-                bags: cols[8],
-                gradeType: cols[9],
-                grade: cols[10],
-                reservedPrice: cols[11],
-                auctionStartPrice: cols[12],
-                immatureSeeds: cols[13],
-                moisture: cols[14],
-                mobile: cols[15],
-                specialLot: cols[16],
-                colour: cols[17],
-                size: cols[18],
-                rejectionSplit: cols[19]
-            };
-        });
-        socket.emit('uploadCatalogue', { lots: lots, password: 'spices_admin_2026' });
-        alert("Catalogue Loaded Successfully!");
+    function control(action) {
+        const pass = document.getElementById('admin-pass').value;
+        socket.emit('adminAction', { action: action, password: pass });
+    }
+
+    function alertQuality(note) {
+        const pass = document.getElementById('admin-pass').value;
+        socket.emit('adminAction', { action: 'QUALITY_ALERT', note: note, password: pass });
     }
 </script>
