@@ -1,23 +1,2 @@
-<div id="video-box" style="width: 100%; height: 300px; background: #000; margin-bottom: 10px; display: none;">
-    <iframe id="live-stream" width="100%" height="100%" src="" frameborder="0" allowfullscreen></iframe>
-</div>
-
-<script>
-    socket.on('updateBid', (data) => {
-        if (data.videoUrl) {
-            document.getElementById('video-box').style.display = 'block';
-            document.getElementById('live-stream').src = data.videoUrl;
-        }
-        // ... rest of your UI update logic
-    });
-
-    socket.on('sendNotification', (data) => {
-        if (myName === data.target) {
-            alert("🎊 CONGRATULATIONS!\n" + data.message);
-            // WhatsApp Link Option
-            if(confirm("Open WhatsApp to confirm purchase?")) {
-                window.open(`https://wa.me/?text=${encodeURIComponent(data.message)}`);
-            }
-        }
-    });
-</script>
+<input type="text" id="stream-url" placeholder="Paste YouTube Live URL">
+<button onclick="socket.emit('updateVideo', {url: document.getElementById('stream-url').value, password: 'spices_admin_2026'})">Start Live Stream</button>
