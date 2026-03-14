@@ -1,45 +1,18 @@
-<div id="admin-approval-panel" style="margin-top: 20px; border-top: 2px solid #d32f2f; padding-top: 15px;">
-    <h4 style="color: #d32f2f;">Pending Registrations</h4>
-    <table style="width: 100%; border-collapse: collapse; font-size: 0.85em; background: white;">
-        <thead>
-            <tr style="background: #eee;">
-                <th style="padding: 5px; border: 1px solid #ddd;">Name</th>
-                <th style="padding: 5px; border: 1px solid #ddd;">Company</th>
-                <th style="padding: 5px; border: 1px solid #ddd;">GST</th>
-                <th style="padding: 5px; border: 1px solid #ddd;">Action</th>
-            </tr>
-        </thead>
-        <tbody id="pending-table-body">
-            </tbody>
-    </table>
-</div>
+<td style="padding: 5px; border: 1px solid #ddd;">
+    <input type="number" id="limit-${buyer.username}" value="1000000" style="width: 80px;">
+    <button onclick="approveWithLimit('${buyer.username}')" style="background: #2e7d32; color: white;">Approve</button>
+</td>
 
 <script>
-    // Listen for new registration requests
-    socket.on('newRegistrationRequest', (pendingList) => {
-        const tableBody = document.getElementById('pending-table-body');
-        tableBody.innerHTML = ''; // Clear current list
-
-        pendingList.forEach(buyer => {
-            const row = `
-                <tr>
-                    <td style="padding: 5px; border: 1px solid #ddd;">${buyer.username}</td>
-                    <td style="padding: 5px; border: 1px solid #ddd;">${buyer.company}</td>
-                    <td style="padding: 5px; border: 1px solid #ddd;">${buyer.gst}</td>
-                    <td style="padding: 5px; border: 1px solid #ddd;">
-                        <button onclick="approveDealer('${buyer.username}')" style="background: #2e7d32; color: white; border: none; padding: 3px 8px; cursor: pointer;">Approve</button>
-                    </td>
-                </tr>`;
-            tableBody.innerHTML += row;
-        });
+function approveWithLimit(username) {
+    const pass = document.getElementById('admin-pass').value;
+    const limitVal = document.getElementById(`limit-${username}`).value;
+    
+    socket.emit('adminAction', {
+        action: 'approve_buyer',
+        targetUser: username,
+        password: pass,
+        limit: parseInt(limitVal)
     });
-
-    function approveDealer(username) {
-        const pass = document.getElementById('admin-pass').value; // Uses your existing password field
-        socket.emit('adminAction', {
-            action: 'approve_buyer',
-            targetUser: username,
-            password: pass
-        });
-    }
+}
 </script>
