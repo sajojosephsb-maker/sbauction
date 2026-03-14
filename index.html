@@ -1,10 +1,28 @@
-function sendWhatsAppReport() {
-    const report = generateEODSummary(); // Using the logic we built
-    const text = `*Auction Summary Report*%0A` +
-                 `Total Revenue: ${report.totalRevenue}%0A` +
-                 `Total Volume: ${report.totalVolume}%0A` +
-                 `Avg Price: ${report.averagePrice}`;
-    
-    // Opens WhatsApp with the text pre-filled
-    window.open(`https://wa.me/918547273423?text=${text}`, '_blank'); 
-}
+<div id="registration-screen" style="max-width: 400px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+    <h2 style="color: #2e7d32;">Dealer Registration</h2>
+    <input type="text" id="reg-name" placeholder="Full Name" class="form-input">
+    <input type="text" id="reg-company" placeholder="Company Name" class="form-input">
+    <input type="text" id="reg-gst" placeholder="GST Number" class="form-input">
+    <button onclick="registerDealer()" style="width: 100%; background: #2e7d32; color: white; padding: 10px; margin-top: 10px;">Request Access</button>
+    <p id="reg-status" style="font-size: 0.8em; color: #666; margin-top: 10px;"></p>
+</div>
+
+<script>
+    function registerDealer() {
+        const data = {
+            username: document.getElementById('reg-name').value,
+            company: document.getElementById('reg-company').value,
+            gst: document.getElementById('reg-gst').value
+        };
+        socket.emit('registerBuyer', data);
+        document.getElementById('reg-status').innerText = "Request sent. Waiting for Admin...";
+    }
+
+    socket.on('buyerApproved', (username) => {
+        if (username === document.getElementById('reg-name').value) {
+            alert("Approval Granted! Welcome to the Auction.");
+            document.getElementById('registration-screen').style.display = 'none';
+            document.getElementById('auction-dashboard').style.display = 'block';
+        }
+    });
+</script>
