@@ -1,2 +1,26 @@
-<input type="text" id="stream-url" placeholder="Paste YouTube Live URL">
-<button onclick="socket.emit('updateVideo', {url: document.getElementById('stream-url').value, password: 'spices_admin_2026'})">Start Live Stream</button>
+<div id="admin-ai-assistant" style="background: #fff3e0; border: 2px solid #ff9800; padding: 15px; margin-top: 20px; border-radius: 8px;">
+    <h4 style="margin: 0; color: #e65100;">🤖 AI Price Assistant</h4>
+    <p id="ai-note" style="font-size: 12px; color: #666;">Analyzing market trends...</p>
+    <div style="font-size: 24px; font-weight: bold; color: #333;">
+        Suggested Opening: <span id="ai-price">₹---</span>
+    </div>
+    <button onclick="applyAISuggestion()" style="margin-top: 10px; background: #ff9800; color: white; border: none; padding: 8px 15px; cursor: pointer;">
+        Use This Price
+    </button>
+</div>
+
+<script>
+    // Request suggestion when admin opens the panel
+    socket.emit('getAIRecommendation');
+
+    socket.on('aiSuggestion', (data) => {
+        document.getElementById('ai-price').innerText = "₹" + data.price;
+        document.getElementById('ai-note').innerText = data.note;
+        // Store it temporarily
+        window.currentAISuggestion = data.price;
+    });
+
+    function applyAISuggestion() {
+        document.getElementById('start-bid-input').value = window.currentAISuggestion;
+    }
+</script>
