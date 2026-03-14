@@ -20,19 +20,16 @@
 <div class="admin-card">
     <h2>Auction Controller</h2>
     <div class="timer-box" id="timer">00</div>
-    
     <div class="status-grid">
         <div><strong>Lot:</strong> <span id="current-lot">IDLE</span></div>
         <div><strong>Weight:</strong> <span id="weight">0.00 kg</span></div>
         <div><strong>Price:</strong> <span id="highest-bid">₹0</span></div>
         <div><strong>Bidder:</strong> <span id="highest-bidder">No Bids</span></div>
     </div>
-
     <div class="btn btn-upload">
         1. UPLOAD CSV CATALOGUE
         <input type="file" id="csvFile" accept=".csv">
     </div>
-    
     <button class="btn btn-accept" onclick="acceptSale()">2. ✅ ACCEPT & NEXT LOT</button>
 </div>
 
@@ -48,7 +45,6 @@
         document.getElementById('timer').innerText = data.timeLeft;
     });
 
-    // THIS IS THE MISSING LOGIC TO READ YOUR COMPUTER FILES
     document.getElementById('csvFile').addEventListener('change', function(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
@@ -56,15 +52,11 @@
             const text = event.target.result;
             const rows = text.split('\n').filter(row => row.trim() !== "");
             const list = rows.slice(1).map(row => {
-                const columns = row.split(',');
-                return {
-                    lotNumber: columns[0].trim(),
-                    weight: parseFloat(columns[1]),
-                    startPrice: parseInt(columns[2])
-                };
+                const cols = row.split(',');
+                return { lotNumber: cols[0].trim(), weight: parseFloat(cols[1]), startPrice: parseInt(cols[2]) };
             });
             socket.emit('uploadCatalogue', { list: list, password: ADMIN_PASS });
-            alert("Success! " + list.length + " Lots loaded.");
+            alert("Loaded " + list.length + " items!");
         };
         reader.readAsText(file);
     });
