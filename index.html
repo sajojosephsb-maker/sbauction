@@ -1,72 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Spice Auction Admin</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; margin-bottom: 20px; }
-        .timer { font-size: 3rem; font-weight: bold; color: #e74c3c; margin: 10px 0; }
-        .btn { padding: 12px 24px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border-bottom: 1px solid #eee; padding: 10px; text-align: left; font-size: 0.9rem; }
-    </style>
-</head>
-<body>
-
-<div class="card">
-    <h2>Auction Controller</h2>
-    <div class="timer" id="timer">00</div>
-    <p>Lot: <strong id="lot">IDLE</strong> | Weight: <strong id="weight">0.00</strong> kg</p>
-    <p>Price: <strong id="price">₹0</strong> | Bidder: <span id="bidder">No Bids</span></p>
-    <hr>
-    <p style="text-align:left; font-size:0.8rem;">1. UPLOAD CSV CATALOGUE</p>
-    <input type="file" id="csvFile" accept=".csv" style="margin-bottom: 15px;">
-    <button class="btn" onclick="nextLot()">2. ✅ ACCEPT & NEXT LOT</button>
-</div>
-
-<div class="card">
-    <h3>🕒 Last 5 Sales</h3>
-    <table>
-        <thead><tr><th>Lot</th><th>Buyer</th><th>Rate</th></tr></thead>
-        <tbody id="sales-history"></tbody>
-    </table>
-    <a href="https://spice-auction-server.onrender.com/download-report" style="display:block; margin-top:15px; color:#3498db; text-decoration:none; font-weight:bold;">📥 Download Daily Excel Report</a>
-</div>
+<button onclick="resetAuction()" style="background: #e67e22; color: white; margin-top: 10px;" class="btn">🧹 RESET AUCTION DATA</button>
 
 <script>
-    const socket = io("https://spice-auction-server.onrender.com");
-
-    socket.on('updateBid', (data) => {
-        document.getElementById('timer').innerText = data.timeLeft || "00";
-        document.getElementById('lot').innerText = data.currentLot || "IDLE";
-        document.getElementById('weight').innerText = data.weight || "0.00";
-        document.getElementById('price').innerText = "₹" + (data.highestBid || 0);
-        document.getElementById('bidder').innerText = data.highestBidder || "No Bids";
-        
-        if (data.history) {
-            document.getElementById('sales-history').innerHTML = data.history.slice(0, 5).map(s => 
-                `<tr><td>${s.lot}</td><td>${s.buyer}</td><td>₹${s.rate}</td></tr>`
-            ).join('');
+    function resetAuction() {
+        if (confirm("Are you sure? This will clear all history and current bids.")) {
+            socket.emit('adminAction', { action: 'RESET_ALL', password: "spices_admin_2026" });
         }
-    });
-
-    function nextLot() {
-        socket.emit('adminAction', { password: "spices_admin_2026" });
     }
-
-    document.getElementById('csvFile').addEventListener('change', function(e) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const rows = ev.target.result.split('\n').slice(1);
-            const list = rows.map(r => {
-                const c = r.split(',');
-                return { lotNumber: c[0]?.trim(), weight: parseFloat(c[1]), startPrice: parseInt(c[2]) };
-            }).filter(i => i.lotNumber);
-            socket.emit('uploadCatalogue', { list, password: "spices_admin_2026" });
-        };
-        reader.readAsText(e.target.files[0]);
-    });
 </script>
-</body>
-</html>
