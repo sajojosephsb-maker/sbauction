@@ -1,21 +1,28 @@
-<div style="background: #e1f5fe; padding: 15px; border: 1px solid #0288d1; border-radius: 8px; margin-top: 20px;">
-    <h4 style="color: #01579b; margin-top: 0;">💬 Private Buyer Message</h4>
-    <input type="text" id="msg-target" placeholder="Recipient Name">
-    <textarea id="msg-content" placeholder="Type private message..." style="width:100%; margin: 10px 0;"></textarea>
-    <button onclick="sendPrivate()" style="background: #0288d1; color: white; width: 100%;">Send Secret Message</button>
-</div>
+<button onclick="generateBill('LOT-101')" style="background: #000; color: white; padding: 5px;">🖨️ Print Bill</button>
 
 <script>
-    function sendPrivate() {
-        const target = document.getElementById('msg-target').value;
-        const msg = document.getElementById('msg-content').value;
+    function generateBill(lotId) {
         const pass = document.getElementById('admin-pass').value;
-
-        socket.emit('sendPrivateMessage', {
-            targetName: target,
-            message: msg,
-            password: pass
-        });
-        alert("Message dispatched to " + target);
+        socket.emit('requestInvoice', { lotId: lotId, password: pass });
     }
+
+    socket.on('printInvoice', (data) => {
+        const invoiceWindow = window.open('', '_blank');
+        invoiceWindow.document.write(`
+            <div style="font-family: Arial; padding: 40px; border: 1px solid #000;">
+                <h2 style="text-align:center;">OFFICIAL AUCTION INVOICE</h2>
+                <hr>
+                <p><strong>Lot Number:</strong> ${data.lot}</p>
+                <p><strong>Purchaser:</strong> ${data.buyer}</p>
+                <p><strong>Rate:</strong> ₹${data.rate}</p>
+                <hr>
+                <p>Market Value: ₹${(data.rate * 600).toLocaleString()}</p>
+                <p>Commission (1%): ₹${(data.rate * 600 * 0.01).toLocaleString()}</p>
+                <p>GST (5%): ₹${(data.rate * 600 * 1.01 * 0.05).toLocaleString()}</p>
+                <h3 style="background:#eee; padding:10px;">Total Payable: ₹${data.totalValue}</h3>
+                <p style="margin-top:50px; text-align:right;">Authorized Signature</p>
+            </div>
+        `);
+        invoiceWindow.print();
+    });
 </script>
