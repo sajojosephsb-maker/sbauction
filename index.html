@@ -1,50 +1,37 @@
 <style>
-    .credit-box { margin: 15px 0; text-align: left; font-size: 0.8em; }
-    .progress-bg { background: #ddd; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 5px; }
-    #progress-fill { background: #2e7d32; height: 100%; width: 0%; transition: 0.3s; }
+    .video-container {
+        width: 100%;
+        background: #000;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        border: 2px solid #2e7d32;
+        position: relative;
+    }
+    .video-overlay-text {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(211, 47, 47, 0.8);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.7em;
+        font-weight: bold;
+        animation: blinker 1.5s linear infinite;
+    }
+    @keyframes blinker { 50% { opacity: 0; } }
 </style>
 
-<div class="credit-box">
-    <span>Credit Used: ₹<span id="spent-display">0</span> / ₹10,00,000</span>
-    <div class="progress-bg"><div id="progress-fill"></div></div>
+<div class="video-container">
+    <div class="video-overlay-text">● LIVE FROM PUTTADY CENTER</div>
+    <iframe 
+        width="100%" 
+        height="100%" 
+        src="https://www.youtube.com/embed/live_stream?channel=YOUR_CHANNEL_ID" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        allowfullscreen>
+    </iframe>
 </div>
-
-<script>
-    // Calculate total spent from localStorage
-    function getSpentAmount() {
-        const history = JSON.parse(localStorage.getItem('mySpiceWins') || "[]");
-        return history.reduce((sum, win) => sum + (win.price * win.specs.totalWeight), 0);
-    }
-
-    function updateCreditUI() {
-        const spent = getSpentAmount();
-        const limit = 1000000;
-        const percent = (spent / limit) * 100;
-        
-        document.getElementById('spent-display').innerText = spent.toLocaleString('en-IN');
-        document.getElementById('progress-fill').style.width = percent + "%";
-        
-        if (percent > 80) document.getElementById('progress-fill').style.background = "orange";
-        if (percent >= 100) document.getElementById('progress-fill').style.background = "red";
-        
-        return spent;
-    }
-
-    function placeBid() {
-        const val = parseInt(document.getElementById('bid-input').value);
-        if (val > currentBid) {
-            socket.emit('placeBid', { 
-                amount: val, 
-                bidderName: myName,
-                currentSpent: getSpentAmount() // Send current spending to server
-            });
-            document.getElementById('bid-input').value = '';
-        }
-    }
-
-    // Handle Errors from server (like Limit Exceeded)
-    socket.on('error', (msg) => { alert(msg); });
-
-    // Initial UI Update
-    updateCreditUI();
-</script>
