@@ -1,6 +1,14 @@
-doc.fontSize(14).text(`Session Financial Summary`, { underline: true });
-doc.fontSize(10).text(`-----------------------------------------------`);
-doc.text(`Total Quantity Sold: ${sessionTotalQty} Kg`);
-doc.text(`Total Bid Value: ₹${sessionTotalValue.toLocaleString('en-IN')}`);
-doc.text(`Total GST (5%): ₹${(sessionTotalValue * GST_RATE).toLocaleString('en-IN')}`);
-doc.fontSize(12).text(`NET PAYABLE: ₹${sessionTotalWithTax.toLocaleString('en-IN')}`, { bold: true });
+<div id="buyer-ledger" style="margin-top: 30px; border: 1px solid #ccc; padding: 15px; border-radius: 10px; background: #fafafa;">
+    <h3>📊 My Purchase Ledger</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #e0e0e0;">
+                <th style="padding: 8px;">Date</th>
+                <th style="padding: 8px;">Lot Number</th>
+                <th style="padding: 8px;">Total Payable (Incl. Tax)</th>
+            </tr>
+        </thead>
+        <tbody id="ledger-body">
+            </tbody>
+    </table>
+</div>
