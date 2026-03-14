@@ -1,37 +1,40 @@
-<div style="background: #e3f2fd; padding: 20px; border: 2px solid #2196f3; border-radius: 10px;">
-    <h3>🕹️ Auction Control Center</h3>
-    
-    <label>Next Lot ID:</label>
-    <input type="text" id="next-lot-id" placeholder="e.g., LOT-102">
-    
-    <label>AI Suggested Start:</label>
-    <input type="number" id="start-price" placeholder="Rate (₹)">
-
-    <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <button onclick="sendAdminAction('START_AUCTION')" style="background: #4caf50; color: white;">🚀 START LOT</button>
-        <button onclick="sendAdminAction('CLOSE_MANUAL')" style="background: #ff9800; color: white;">🔨 CLOSE NOW</button>
-        <button onclick="sendAdminAction('WITHDRAW')" style="background: #f44336; color: white;">🚫 WITHDRAW</button>
-        <button onclick="rerunLot()" style="background: #9c27b0; color: white;">🔄 RERUN LOT</button>
-    </div>
+<div id="catalogue-upload" style="background: #fdfdfd; padding: 20px; border: 1px solid #ddd; margin-top: 20px;">
+    <h3>📋 Catalogue & Lot Specs</h3>
+    <p>Paste your lot data here in the requested format:</p>
+    <textarea id="csv-input" style="width:100%; height:150px;" placeholder="Lot Number	Collection Centre	Planter Name..."></textarea>
+    <button onclick="processCatalogue()" style="background: #1a73e8; color: white; padding: 10px 20px;">Load Catalogue</button>
 </div>
 
 <script>
-    function sendAdminAction(action) {
-        const pass = document.getElementById('admin-pass').value;
-        const lot = document.getElementById('next-lot-id').value;
-        const price = document.getElementById('start-price').value;
-        
-        socket.emit('adminControl', { 
-            action: action, 
-            password: pass, 
-            lotId: lot, 
-            startPrice: parseFloat(price) 
+    function processCatalogue() {
+        const rawData = document.getElementById('csv-input').value;
+        const rows = rawData.split('\n');
+        const lots = rows.map(row => {
+            const cols = row.split('\t'); // Splits by Tab
+            return {
+                lotNumber: cols[0],
+                collectionCentre: cols[1],
+                planterDealer: cols[2],
+                planterName: cols[3],
+                crNo: cols[4],
+                receiptNo: cols[5],
+                quantity: cols[6],
+                litreWeight: cols[7],
+                bags: cols[8],
+                gradeType: cols[9],
+                grade: cols[10],
+                reservedPrice: cols[11],
+                auctionStartPrice: cols[12],
+                immatureSeeds: cols[13],
+                moisture: cols[14],
+                mobile: cols[15],
+                specialLot: cols[16],
+                colour: cols[17],
+                size: cols[18],
+                rejectionSplit: cols[19]
+            };
         });
-    }
-
-    function rerunLot() {
-        // Keeps the same Lot ID but resets bidding
-        document.getElementById('start-price').value = "1000"; // Or AI suggested price
-        sendAdminAction('START_AUCTION');
+        socket.emit('uploadCatalogue', { lots: lots, password: 'spices_admin_2026' });
+        alert("Catalogue Loaded Successfully!");
     }
 </script>
