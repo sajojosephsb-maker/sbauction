@@ -1,53 +1,35 @@
 <style>
-    .dashboard-panel { margin-top: 30px; border-top: 2px solid #2e7d32; padding-top: 20px; text-align: left; }
-    .win-card { background: #fff; border-left: 5px solid #2e7d32; padding: 15px; margin-bottom: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .win-card h4 { margin: 0; color: #2e7d32; }
-    .win-card p { margin: 5px 0; font-size: 0.85em; color: #555; }
+    .total-value-box {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 10px;
+        font-weight: bold;
+        border: 1px dashed #2e7d32;
+    }
 </style>
 
-<div class="dashboard-panel">
-    <h3 style="color: #2e7d32;">My Purchase History</h3>
-    <div id="my-wins-list">
-        <p style="color: #999; font-style: italic;">You haven't won any lots yet this session.</p>
-    </div>
+<div class="total-value-box">
+    Estimated Total: ₹<span id="total-value-display">0</span>
 </div>
 
 <script>
-    // ... (inside your auctionEnded listener)
-    socket.on('auctionEnded', (winRecord) => {
-        // ... (keep your existing sold-overlay logic)
-
-        // Check if I am the winner
-        if (winRecord.winner === myName) {
-            saveWinToDashboard(winRecord);
-        }
+    socket.on('updateBid', (data) => {
+        // ... (keep existing updates)
+        
+        const totalValue = data.highestBid * data.specs.totalWeight;
+        document.getElementById('total-value-display').innerText = totalValue.toLocaleString('en-IN');
+        
+        // Add quantity info to the specs display
+        document.getElementById('spec-qty').innerText = `${data.specs.bags} Bags (${data.specs.totalWeight} kg)`;
     });
 
-    function saveWinToDashboard(record) {
-        // Get existing wins from storage or create new array
-        let history = JSON.parse(localStorage.getItem('mySpiceWins') || "[]");
-        history.unshift(record);
-        localStorage.setItem('mySpiceWins', JSON.stringify(history));
-        
-        displayWins();
-    }
-
+    // Update your "My Wins" display to show the total bill
     function displayWins() {
-        const listDiv = document.getElementById('my-wins-list');
         const history = JSON.parse(localStorage.getItem('mySpiceWins') || "[]");
-        
-        if (history.length > 0) {
-            listDiv.innerHTML = history.map(win => `
-                <div class="win-card">
-                    <h4>${win.lot}</h4>
-                    <p><b>Price Paid:</b> ₹${win.price}/kg</p>
-                    <p><b>Details:</b> ${win.specs.size} | ${win.specs.literWeight}</p>
-                    <p style="font-size: 0.7em; color: #999;">Date: ${win.date}</p>
-                </div>
-            `).join('');
-        }
+        // ... (inside the map function)
+        // Add this line: 
+        // <p><b>Total Bill:</b> ₹${(win.price * win.specs.totalWeight).toLocaleString('en-IN')}</p>
     }
-
-    // Call displayWins on page load
-    displayWins();
 </script>
