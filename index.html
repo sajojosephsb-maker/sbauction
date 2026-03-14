@@ -1,13 +1,6 @@
-<div style="display: flex; justify-content: space-around; background: #263238; color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-family: monospace;">
-    <div>📈 SESSION HIGH: <span id="stat-high" style="color: #4caf50;">₹0</span></div>
-    <div>📉 SESSION LOW: <span id="stat-low" style="color: #ff5252;">₹0</span></div>
-    <div>⚖️ AVG RATE: <span id="stat-avg" style="color: #2196f3;">₹0</span></div>
-</div>
-
-<script>
-    socket.on('updateGlobalStats', (stats) => {
-        document.getElementById('stat-high').innerText = "₹" + stats.high;
-        document.getElementById('stat-low').innerText = "₹" + stats.low;
-        document.getElementById('stat-avg').innerText = "₹" + stats.avg;
-    });
-</script>
+doc.fontSize(14).text(`Session Financial Summary`, { underline: true });
+doc.fontSize(10).text(`-----------------------------------------------`);
+doc.text(`Total Quantity Sold: ${sessionTotalQty} Kg`);
+doc.text(`Total Bid Value: ₹${sessionTotalValue.toLocaleString('en-IN')}`);
+doc.text(`Total GST (5%): ₹${(sessionTotalValue * GST_RATE).toLocaleString('en-IN')}`);
+doc.fontSize(12).text(`NET PAYABLE: ₹${sessionTotalWithTax.toLocaleString('en-IN')}`, { bold: true });
