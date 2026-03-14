@@ -1,59 +1,32 @@
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-    .chart-container {
-        background: white;
-        padding: 20px;
-        border-radius: 15px;
-        margin-top: 30px;
-        border: 1px solid #ddd;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-</style>
-
-<div class="chart-container">
-    <h3 style="color: #2e7d32; margin-top: 0;">Session Price Trends</h3>
-    <canvas id="trendChart"></canvas>
-</div>
+<audio id="tick-sound" src="https://actions.google.com/sounds/v1/clocks/mechanical_clock_tick.ogg"></audio>
+<audio id="sold-sound" src="https://actions.google.com/sounds/v1/emergency/beep_warning.ogg"></audio>
 
 <script>
-    let trendChart;
+    // ... inside your socket.on('timerUpdate') listener
+    socket.on('timerUpdate', (timeLeft) => {
+        document.getElementById('timer-display').innerText = timeLeft;
 
-    function initChart() {
-        const ctx = document.getElementById('trendChart').getContext('2d');
-        trendChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [], // Lot numbers go here
-                datasets: [{
-                    label: 'Price (₹/kg)',
-                    data: [], // Prices go here
-                    borderColor: '#2e7d32',
-                    backgroundColor: 'rgba(46, 125, 50, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: false, grid: { display: false } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-    }
+        // UI Changes
+        if (timeLeft <= 5) {
+            document.getElementById('timer-display').style.color = "#d32f2f";
+            document.getElementById('timer-display').style.transform = "scale(1.1)";
+        } else {
+            document.getElementById('timer-display').style.color = "#2e7d32";
+            document.getElementById('timer-display').style.transform = "scale(1)";
+        }
 
-    // Listen for history updates from the server
-    socket.on('updateHistory', (history) => {
-        if (!trendChart) initChart();
-        
-        trendChart.data.labels = history.map(h => h.label);
-        trendChart.data.datasets[0].data = history.map(h => h.price);
-        trendChart.update();
+        // NEW: Audio Alert for last 3 seconds
+        if (timeLeft <= 3 && timeLeft > 0) {
+            const tick = document.getElementById('tick-sound');
+            tick.currentTime = 0; // Reset sound
+            tick.play().catch(e => console.log("Audio requires user interaction first"));
+        }
     });
 
-    initChart(); // Initialize on page load
+    socket.on('auctionEnded', (data) => {
+        // ... (keep existing sold overlay logic)
+        
+        // Play Sold Sound
+        document.getElementById('sold-sound').play();
+    });
 </script>
