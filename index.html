@@ -1,2 +1,58 @@
-// Inside the 'change' event listener in index.html
-socket.emit('uploadCatalogue', { list, password: "1234" }); // Updated to 1234
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login - 1234</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 50px; text-align: center; background: #f0f2f5; }
+        .box { background: white; padding: 30px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input { display: block; width: 100%; margin: 10px 0; padding: 10px; }
+        .green { color: #27ae60; font-weight: bold; margin-top: 15px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Admin Dashboard</h2>
+        <input type="text" id="adminId" placeholder="Login ID (admin)">
+        <input type="password" id="pass" placeholder="Password (1234)">
+        <hr>
+        <h3>Upload Auction CSV</h3>
+        <input type="file" id="csvFile" accept=".csv">
+        <div id="status" class="green">✅ Data Uploaded & Confirmed!</div>
+    </div>
+
+<script>
+    const socket = io("https://spice-auction-server.onrender.com");
+
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+        const id = document.getElementById('adminId').value;
+        const pw = document.getElementById('pass').value;
+        
+        if(id !== "admin" || pw !== "1234") {
+            alert("Wrong Admin Credentials");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const rows = ev.target.result.split('\n').slice(1);
+            const list = rows.map(r => {
+                const c = r.split(',');
+                return {
+                    lotNumber: c[0], collectionCentre: c[1], type: c[2], ownerName: c[3],
+                    idNumber: c[4], receiptNumber: c[5], qtyWithBag: c[6], qtyWithoutBag: c[7],
+                    literWeight: c[8], bags: c[9], gradeType: c[10], grade: c[11],
+                    reservedPrice: c[12], startPrice: c[13], immature: c[14], moisture: c[15],
+                    mobile: c[16], special: c[17], colour: c[18], size: c[19], split: c[20],
+                    bankName: c[21], branch: c[22], accountNo: c[23], ifsc: c[24]
+                };
+            }).filter(i => i.lotNumber);
+
+            socket.emit('uploadCatalogue', { list, password: pw });
+            document.getElementById('status').style.display = 'block';
+        };
+        reader.readAsText(e.target.files[0]);
+    });
+</script>
+</body>
+</html>
