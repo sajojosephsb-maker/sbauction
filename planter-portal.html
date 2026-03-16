@@ -1,41 +1,20 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+// Inside planter-portal.html <script>
+socket.on('updateBid', (data) => {
+    // Check if a lot just ended and it belongs to this planter
+    if (data.isEnded && (data.ownerName === userId || data.idNumber === userId)) {
+        if (data.highestBidder !== "No Bids") {
+            showNotification(`Congratulations! Lot ${data.lotNumber} sold for ₹${data.highestBid}`);
+            // Small vibration for mobile users
+            if (window.navigator.vibrate) window.navigator.vibrate(200);
+        }
+    }
+    // ... existing UI updates
+});
 
-<script>
-    const { jsPDF } = window.jspdf;
-
-    function generatePDF(data) {
-        const doc = new jsPDF();
-        
-        // 1. OFFICIAL LETTERHEAD
-        doc.setFillColor(39, 174, 96); // Green header
-        doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(22);
-        doc.text("OFFICIAL CROP RECEIPT", 105, 20, { align: 'center' });
-        doc.setFontSize(10);
-        doc.text("SPICE AUCTION TRADING CENTER | GOVT REGULATED", 105, 30, { align: 'center' });
-
-        // 2. PLANTER & LOT INFORMATION
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        doc.text("PLANTER DETAILS", 20, 55);
-        doc.setFont(undefined, 'normal');
-        doc.text(`Name: ${data.ownerName}`, 20, 65);
-        doc.text(`ID/GST: ${data.idNumber}`, 20, 72);
-        doc.text(`Mobile: ${data.mobile}`, 20, 79);
-        
-        doc.setFont(undefined, 'bold');
-        doc.text("LOT DETAILS", 120, 55);
-        doc.setFont(undefined, 'normal');
-        doc.text(`Lot No: ${data.lotNumber}`, 120, 65);
-        doc.text(`Receipt: ${data.receiptNumber}`, 120, 72);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 120, 79);
-
-        // 3. QUALITY PARAMETERS (The data from your 25+ fields)
-        doc.setFillColor(240, 240, 240);
-        doc.rect(20, 90, 170, 45, 'F');
-        doc.text("QUALITY ANALYSIS REPORT", 105, 98, { align: 'center' });
-        doc.setFontSize(10);
-        doc.text(`Moisture: ${data.moisture}%
+function showNotification(msg) {
+    const div = document.createElement('div');
+    div.style = "position:fixed; top:20px; background:#27ae60; color:white; padding:15px; border-radius:8px; z-index:1000; box-shadow:0 4px 12px rgba(0,0,0,0.2);";
+    div.innerText = msg;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 5000);
+}
