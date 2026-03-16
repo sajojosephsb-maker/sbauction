@@ -1,1 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Auction Stream - Spice Auction</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: white; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .stream-container { width: 100%; max-width: 900px; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .video-box { background: #000; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; border: 1px solid #333; }
+        .info-panel { background: #262626; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; }
+        .price-label { color: #888; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+        .current-price { font-size: 3.5rem; color: #2ecc71; font-weight: bold; margin: 10px 0; }
+        .lot-badge { background: #e74c3c; padding: 5px 15px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        .quality-card { background: #333; padding: 15px; border-radius: 8px; margin-top: 20px; }
+        .quality-row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 0.9rem; }
+        @media (max-width: 768px) { .stream-container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
 
+    <h1 style="margin-bottom: 30px;">🔴 Live Spice Auction</h1>
+
+    <div class="stream-container">
+        <div class="video-box">
+            <iframe id="main-video" width="100%" height="100%" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+
+        <div class="info-panel">
+            <div id="lot-tag" class="lot-badge">WAITING...</div>
+            <div class="price-label">Current Highest Bid</div>
+            <div class="current-price" id="live-price">₹0</div>
+            
+            <div class="quality-card">
+                <div style="font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px;">Lab Quality Report</div>
+                <div class="quality-row"><span>Color:</span> <span id="q-color">-</span></div>
+                <div class="quality-row"><span>Moisture:</span> <span id="q-moist">-</span></div>
+                <div class="quality-row"><span>Liter Weight:</span> <span id="q-weight">-</span></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const socket = io("https://spice-auction-server.onrender.com");
+
+    socket.on('updateBid', (data) => {
+        document.getElementById('lot-tag').innerText = "LOT: " + data.currentLot;
+        document.getElementById('live-price').innerText = "₹" + data.highestBid;
+        if (data.videoUrl) document.getElementById('main-video').src = data.videoUrl;
+    });
+
+    socket.on('qualityUpdate', (quality) => {
+        document.getElementById('q-color').innerText = quality.colour;
+        document.getElementById('q-moist').innerText = quality.moisture;
+        document.getElementById('q-weight').innerText = quality.literWeight;
+    });
+</script>
+</body>
+</html>
