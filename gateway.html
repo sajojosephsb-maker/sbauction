@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ERP Gateway | Spice Auction</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .gateway-container { text-align: center; background: white; padding: 50px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; margin-bottom: 30px; }
+        .btn-group { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        
+        .login-btn { width: 200px; padding: 25px; border: none; border-radius: 10px; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; display: flex; flex-direction: column; align-items: center; }
+        .login-btn:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
+        /* Specific Portal Colors */
+        .admin-btn { background: #e74c3c; } /* RED for Master Control */
+        .trader-btn { background: #27ae60; } /* GREEN for Bidding/Money */
+        .company-btn { background: #3498db; } /* BLUE for Corporate/Uploads */
+        
+        .btn-desc { font-size: 0.8rem; font-weight: normal; margin-top: 8px; opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <div class="gateway-container">
+        <h1>🌿 Spice Auction ERP Gateway</h1>
+        <div class="btn-group">
+            <a href="index.html" class="login-btn admin-btn">
+                <span>Admin Login</span>
+                <span class="btn-desc">System & User Management</span>
+            </a>
+
+            <a href="login.html" class="login-btn trader-btn">
+                <span>Trader Login</span>
+                <span class="btn-desc">Live Bidding Terminal</span>
+            </a>
+
+            <a href="login.html" class="login-btn company-btn">
+                <span>Company Login</span>
+                <span class="btn-desc">Lot Uploads & Catalogues</span>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
