@@ -1,28 +1,53 @@
-<div class="dashboard">
-    <div id="live-lot-details" style="background: #fff; padding: 15px; border-radius: 10px;">
-        <h2 id="lot-num">Lot: --</h2>
-        <div class="price" id="current-price">₹0</div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; text-align: left;">
-            <div><b>Center:</b> <span id="d-center">-</span></div>
-            <div><b>Weight:</b> <span id="d-weight">-</span>kg</div>
-            <div><b>Moisture:</b> <span id="d-moist">-</span>%</div>
-            <div><b>Liter Wt:</b> <span id="d-lit">-</span></div>
-            <div><b>Bank:</b> <span id="d-bank">-</span></div>
-            <div><b>Acc:</b> <span id="d-acc">-</span></div>
-        </div>
-    </div>
-</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
+    const { jsPDF } = window.jspdf;
+
     socket.on('updateBid', (data) => {
-        document.getElementById('lot-num').innerText = "Lot: " + data.lotNumber;
-        document.getElementById('current-price').innerText = "₹" + data.highestBid;
-        document.getElementById('d-center').innerText = data.collectionCentre || "-";
-        document.getElementById('d-weight').innerText = data.qtyWithoutBag || "-";
-        document.getElementById('d-moist').innerText = data.moisture || "-";
-        document.getElementById('d-lit').innerText = data.literWeight || "-";
-        document.getElementById('d-bank').innerText = data.bankName || "-";
-        document.getElementById('d-acc').innerText = data.accountNo || "-";
+        // ... (existing update logic)
+        if (data.history) {
+            const myWins = data.history.filter(s => s.ownerName === userId || s.idNumber === userId);
+            document.getElementById('my-sales').innerHTML = myWins.map(w => `
+                <div class="history-item">
+                    <span>Lot ${w.lotNumber} - ₹${w.rate}</span>
+                    <button onclick='generatePDF(${JSON.stringify(w)})' style="font-size:0.7rem; padding:4px; background:#27ae60; color:white; border:none; border-radius:3px; cursor:pointer;">📄 Download PDF</button>
+                </div>
+            `).join('');
+        }
     });
+
+    function generatePDF(data) {
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("SPICE AUCTION - CROP RECEIPT & INVOICE", 105, 20, { align: 'center' });
+        
+        doc.setFontSize(10);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 30);
+        doc.text(`Lot Number: ${data.lotNumber}`, 20, 40);
+        doc.text(`Planter Name: ${data.ownerName}`, 20, 50);
+        doc.text(`ID (GST/PAN): ${data.idNumber}`, 20, 60);
+        doc.text(`Receipt No: ${data.receiptNumber}`, 20, 70);
+        
+        doc.line(20, 75, 190, 75); // Divider
+        
+        doc.text("QUALITY & QUANTITY DETAILS", 20, 85);
+        doc.text(`Net Weight: ${data.qtyWithoutBag} Kg`, 20, 95);
+        doc.text(`Moisture: ${data.moisture}%`, 20, 105);
+        doc.text(`Color: ${data.colour}`, 20, 115);
+        doc.text(`Grade: ${data.grade}`, 20, 125);
+        
+        doc.line(20, 130, 190, 130); // Divider
+
+        doc.text("PAYMENT INFORMATION", 20, 140);
+        doc.text(`Auction Rate: ₹${data.rate} / Kg`, 20, 150);
+        const total = data.rate * data.qtyWithoutBag;
+        doc.setFont(undefined, 'bold');
+        doc.text(`GROSS TOTAL: ₹${total.toLocaleString()}`, 20, 160);
+        
+        doc.setFont(undefined, 'normal');
+        doc.text(`Bank: ${data.bankName} | Acc: ${data.accountNo}`, 20, 175);
+        doc.text(`IFSC: ${data.ifsc}`, 20, 185);
+
+        doc.save(`Invoice_Lot_${data.lotNumber}.pdf`);
+    }
 </script>
