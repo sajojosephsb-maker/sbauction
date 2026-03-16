@@ -1,69 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Bidder Terminal</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #2c3e50; color: white; text-align: center; padding: 10px; margin: 0; }
-        .card { background: #34495e; padding: 15px; border-radius: 15px; max-width: 450px; margin: auto; }
-        .price { font-size: 3.5rem; color: #2ecc71; margin: 10px 0; font-weight: bold; }
-        .bid-btn { background: #e67e22; color: white; font-size: 1.8rem; padding: 20px; border: none; border-radius: 12px; cursor: pointer; width: 100%; box-shadow: 0 6px 0 #d35400; }
-        #chat-box { height: 100px; overflow-y: auto; background: #1a252f; padding: 10px; margin: 10px 0; text-align: left; font-size: 0.8rem; border-radius: 8px; }
-        .search-box { margin: 15px 0; background: #1a252f; padding: 10px; border-radius: 8px; font-size: 0.8rem; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <div id="video-wrap" style="display:none; margin-bottom:10px;">
-            <iframe id="live-video" width="100%" height="200" src="" frameborder="0" allowfullscreen></iframe>
-        </div>
-        <h2 id="lot-display">WAITING...</h2>
-        <div class="price" id="price-display">₹0</div>
-        <button class="bid-btn" onclick="placeBid()">PLACE BID (+₹50)</button>
-        
-        <div class="search-box">
-            <input type="text" id="searchInp" placeholder="Search Lot #" style="width:60%">
-            <button onclick="search()">🔍</button>
-            <div id="searchRes"></div>
-        </div>
+// Add to the top of the <script> in buyer.html
+const currentTrader = localStorage.getItem('traderId');
+if (!currentTrader) {
+    alert("Please login first!");
+    window.location.href = "login.html";
+}
 
-        <div id="chat-box"></div>
-        <input type="text" id="chatMsg" placeholder="Ask question..." style="width:70%">
-        <button onclick="sendMsg()">Send</button>
-
-        <div style="margin-top:15px;">
-            <button onclick="socket.emit('getMyWins', localStorage.getItem('bidderId'))" style="background:#2980b9; color:white; border:none; padding:8px; border-radius:5px;">🏆 My Wins</button>
-            <div id="wins-list" style="font-size:0.8rem; margin-top:5px;"></div>
-        </div>
-    </div>
-
-<script>
-    const socket = io("https://spice-auction-server.onrender.com");
-    const bidderId = localStorage.getItem("bidderId");
-    if (!bidderId) window.location.href = "bidder-login.html";
-
-    let currentPrice = 0;
-
-    socket.on('updateBid', (data) => {
-        currentPrice = data.highestBid;
-        document.getElementById('lot-display').innerText = "Lot: " + data.currentLot;
-        document.getElementById('price-display').innerText = "₹" + currentPrice;
-        if (data.videoUrl) {
-            document.getElementById('video-wrap').style.display = 'block';
-            document.getElementById('live-video').src = data.videoUrl;
-        }
+// Update the bid function
+function placeBid(amount) {
+    socket.emit('placeBid', { 
+        amount: amount, 
+        userId: currentTrader // Uses the ID from login
     });
-
-    function placeBid() { socket.emit('placeBid', { userId: bidderId, amount: currentPrice + 50 }); }
-    function sendMsg() { socket.emit('sendChat', { userId: bidderId, msg: document.getElementById('chatMsg').value }); document.getElementById('chatMsg').value = ''; }
-    function search() { socket.emit('searchLot', document.getElementById('searchInp').value); }
-
-    // Restore PC Support
-    window.onkeydown = (e) => { if(e.code === "Space" || e.code === "Enter") { e.preventDefault(); placeBid(); } };
-
-    socket.on('receiveChat', d => { document.getElementById('chat-box').innerHTML += `<div><b>${d.user}:</b> ${d.msg}</div>`; document.getElementById('chat-box').scrollTop = 1000; });
-    socket.on('searchResult', d => { document.getElementById('searchRes').innerText = d.error || `Lot ${d.lotNumber}: ${d.weight}kg (Start: ₹${d.startPrice})`; });
-    socket.on('myWinsResult', wins => { document.getElementById('wins-list').innerHTML = wins.map(w => `Lot ${w.lot}: ₹${w.rate}`).join('<br>') || "No wins yet"; });
-</script>
-</body>
-</html>
+}
