@@ -46,3 +46,14 @@ window.onload = function () {
         display = document.querySelector(\"#time\");
     startAuctionTimer(fiveMinutes, display);
 };
+socket.on('userListUpdate', (users) => {
+    const companyBody = document.getElementById('company-summary-body');
+    const companies = users.filter(u => u.role === 'company');
+    
+    companyBody.innerHTML = companies.map(c => `
+        <tr>
+            <td>${c.userId}</td>
+            <td><span style="color:${c.status === 'active' ? 'green' : 'red'}">${c.status}</span></td>
+            <td>Checking...</td> </tr>
+    `).join('');
+});
