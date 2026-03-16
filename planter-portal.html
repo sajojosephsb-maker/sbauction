@@ -38,47 +38,4 @@
         doc.rect(20, 90, 170, 45, 'F');
         doc.text("QUALITY ANALYSIS REPORT", 105, 98, { align: 'center' });
         doc.setFontSize(10);
-        doc.text(`Moisture: ${data.moisture}%`, 30, 110);
-        doc.text(`Color: ${data.colour}`, 30, 118);
-        doc.text(`Size: ${data.size}`, 30, 126);
-        doc.text(`Grade: ${data.grade}`, 120, 110);
-        doc.text(`Liter Wt: ${data.literWeight}g/L`, 120, 118);
-        doc.text(`Special: ${data.special}`, 120, 126);
-
-        // 4. FINANCIAL SUMMARY
-        doc.setFontSize(12);
-        doc.text(`Quantity: ${data.qtyWithoutBag} Kg`, 20, 150);
-        doc.text(`Rate: ₹${data.rate} / Kg`, 20, 158);
-        const total = data.rate * data.qtyWithoutBag;
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.text(`NET PAYABLE: ₹${total.toLocaleString()}`, 20, 170);
-
-        // 5. BANKING FOR SETTLEMENT
-        doc.setFontSize(9);
-        doc.setFont(undefined, 'normal');
-        doc.text(`Bank: ${data.bankName} | Branch: ${data.branch}`, 20, 185);
-        doc.text(`A/C: ${data.accountNo} | IFSC: ${data.ifsc}`, 20, 192);
-
-        // 6. QR CODE & DIGITAL SIGNATURE
-        // Place QR Code (Bottom Left)
-        const qrContent = `Lot:${data.lotNumber}|Amt:${total}|Planter:${data.ownerName}`;
-        const qrDiv = document.createElement('div');
-        new QRCode(qrDiv, qrContent);
-        const qrImg = qrDiv.querySelector('img').src;
-        doc.addImage(qrImg, 'PNG', 20, 210, 30, 30);
-        doc.setFontSize(8);
-        doc.text("Scan to verify lot", 20, 245);
-
-        // Place Digital Signature (Bottom Right)
-        doc.setFont("courier", "italic");
-        doc.setFontSize(14);
-        doc.setTextColor(0, 0, 150); // Official Blue
-        doc.text("Electronically Signed", 140, 220);
-        doc.text("AUCTION AUTHORITY", 140, 228);
-        doc.setDrawColor(0, 0, 150);
-        doc.line(135, 232, 185, 232);
-
-        doc.save(`Official_Invoice_Lot_${data.lotNumber}.pdf`);
-    }
-</script>
+        doc.text(`Moisture: ${data.moisture}%
