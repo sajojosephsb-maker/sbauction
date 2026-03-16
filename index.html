@@ -1,58 +1,39 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Login - 1234</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 50px; text-align: center; background: #f0f2f5; }
-        .box { background: white; padding: 30px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input { display: block; width: 100%; margin: 10px 0; padding: 10px; }
-        .green { color: #27ae60; font-weight: bold; margin-top: 15px; display: none; }
-    </style>
-</head>
-<body>
-    <div class="box">
-        <h2>Admin Dashboard</h2>
-        <input type="text" id="adminId" placeholder="Login ID (admin)">
-        <input type="password" id="pass" placeholder="Password (1234)">
-        <hr>
-        <h3>Upload Auction CSV</h3>
-        <input type="file" id="csvFile" accept=".csv">
-        <div id="status" class="green">✅ Data Uploaded & Confirmed!</div>
-    </div>
+<div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
+    <h3>👤 Manage Traders</h3>
+    <input type="text" id="newTraderId" placeholder="Trader ID (e.g. TRADER01)">
+    <input type="text" id="newTraderPass" placeholder="Trader Password">
+    <button onclick="addTrader()" style="width:100%; padding:10px; background:#3498db; color:white; border:none; border-radius:5px; cursor:pointer;">Create Trader Login</button>
+    
+    <div id="trader-status" style="font-size: 0.8rem; margin: 10px 0;"></div>
+
+    <ul id="trader-list" style="text-align: left; font-size: 0.9rem; list-style: none; padding: 0;">
+        </ul>
+</div>
 
 <script>
-    const socket = io("https://spice-auction-server.onrender.com");
+    function addTrader() {
+        const traderId = document.getElementById('newTraderId').value;
+        const traderPassword = document.getElementById('newTraderPass').value;
+        const adminPassword = document.getElementById('pass').value;
 
-    document.getElementById('csvFile').addEventListener('change', function(e) {
-        const id = document.getElementById('adminId').value;
-        const pw = document.getElementById('pass').value;
-        
-        if(id !== "admin" || pw !== "1234") {
-            alert("Wrong Admin Credentials");
-            return;
-        }
+        if(!traderId || !traderPassword) return alert("Fill all fields");
 
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const rows = ev.target.result.split('\n').slice(1);
-            const list = rows.map(r => {
-                const c = r.split(',');
-                return {
-                    lotNumber: c[0], collectionCentre: c[1], type: c[2], ownerName: c[3],
-                    idNumber: c[4], receiptNumber: c[5], qtyWithBag: c[6], qtyWithoutBag: c[7],
-                    literWeight: c[8], bags: c[9], gradeType: c[10], grade: c[11],
-                    reservedPrice: c[12], startPrice: c[13], immature: c[14], moisture: c[15],
-                    mobile: c[16], special: c[17], colour: c[18], size: c[19], split: c[20],
-                    bankName: c[21], branch: c[22], accountNo: c[23], ifsc: c[24]
-                };
-            }).filter(i => i.lotNumber);
+        socket.emit('createTrader', { traderId, traderPassword, adminPassword });
+    }
 
-            socket.emit('uploadCatalogue', { list, password: pw });
-            document.getElementById('status').style.display = 'block';
-        };
-        reader.readAsText(e.target.files[0]);
+    socket.on('traderCreated', (res) => {
+        const status = document.getElementById('trader-status');
+        status.innerText = res.success ? `✅ Created: ${res.id}` : `❌ Error: ${res.message}`;
+        status.style.color = res.success ? "green" : "red";
     });
+
+    socket.on('traderListUpdate', (traders) => {
+        const list = document.getElementById('trader-list');
+        list.innerHTML = "<b>Active Traders:</b>" + traders.map(t => 
+            `<li style="padding:5px; border-bottom:1px solid #eee;">🆔 ${t.userId} | 🔑 ${t.password}</li>`
+        ).join('');
+    });
+
+    // Ask for the list when admin connects
+    socket.emit('getTraders');
 </script>
-</body>
-</html>
