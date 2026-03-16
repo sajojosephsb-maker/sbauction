@@ -1,3 +1,21 @@
+<div id="user-header" style="background:#2c3e50; color:white; padding:15px; display:flex; justify-content:space-between; font-family: sans-serif;">
+    <span id="welcome-msg">🔄 Identifying User...</span>
+    <button onclick="logout()" style="background:#e74c3c; color:white; border:none; padding:5px 15px; cursor:pointer; border-radius:4px;">Logout</button>
+</div>
+
+<script>
+    const userData = JSON.parse(localStorage.getItem('user'));
+    if(!userData) {
+        window.location.href = 'gateway.html'; // Security redirect
+    } else {
+        document.getElementById('welcome-msg').innerText = `👤 ${userData.name} | Role: ${userData.role.toUpperCase()}`;
+    }
+    
+    function logout() {
+        localStorage.clear();
+        window.location.href = 'gateway.html';
+    }
+</script>
 <div class="section" style="border-left: 5px solid #8e44ad;">
     <h2>📊 Master Report Center</h2>
     <select id="timeFilter">
