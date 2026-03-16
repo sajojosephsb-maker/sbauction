@@ -1,12 +1,28 @@
-// Add to the top of the <script>
-const traderId = localStorage.getItem('traderId');
-if (!traderId) {
-    window.location.href = "login.html"; // Redirect to login if not authenticated
-}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bidder Terminal</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Bidder Terminal</h1>
+    <div id="status">Checking credentials...</div>
+    <button onclick="logout()" style="background:red; color:white;">Logout</button>
 
-function placeBid(amount) {
-    socket.emit('placeBid', { 
-        amount: amount, 
-        userId: traderId // Bidding is now tied to the logged-in ID
-    });
-}
+    <script>
+        const socket = io("https://spice-auction-server.onrender.com");
+        const traderId = localStorage.getItem('traderId');
+
+        if (!traderId) {
+            window.location.href = "login.html"; 
+        } else {
+            document.getElementById('status').innerText = "Logged in as: " + traderId;
+        }
+
+        function logout() {
+            localStorage.removeItem('traderId');
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>
