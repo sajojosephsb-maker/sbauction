@@ -1,14 +1,19 @@
-<div class="card" style="margin-top:20px; border-left: 5px solid #3498db;">
-    <h2>🏢 Company Management</h2>
-    <input type="text" id="cId" placeholder="Company ID">
-    <input type="password" id="cPass" placeholder="Password">
-    <button onclick="createAccount('company')" style="background:#3498db;">Create Company Login</button>
-</div>
+// Function for Admin to create Trader or Company
+function createAccount(role) {
+    const id = role === 'company' ? document.getElementById('cId').value : document.getElementById('tId').value;
+    const pass = role === 'company' ? document.getElementById('cPass').value : document.getElementById('tPass').value;
+    socket.emit('createAccount', { userId: id, password: pass, role: role });
+}
 
-<script>
-    function createAccount(role) {
-        const userId = role === 'company' ? document.getElementById('cId').value : document.getElementById('tId').value;
-        const password = role === 'company' ? document.getElementById('cPass').value : document.getElementById('tPass').value;
-        socket.emit('createAccount', { userId, password, role });
-    }
-</script>
+// Update UI table with both Traders and Companies
+socket.on('userListUpdate', (users) => {
+    const body = document.getElementById('user-table-body');
+    body.innerHTML = users.map(u => `
+        <tr>
+            <td>${u.userId}</td>
+            <td><b>${u.role.toUpperCase()}</b></td>
+            <td style="color:${u.status==='active'?'green':'red'}">${u.status}</td>
+            <td><button onclick="deleteUser('${u.userId}')">Delete</button></td>
+        </tr>
+    `).join('');
+});
