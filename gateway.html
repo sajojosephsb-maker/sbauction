@@ -1,14 +1,14 @@
 const socket = io('https://spice-auction-server.onrender.com');
 const msg = document.getElementById('msg');
 
-// Real-time server status
+// Real-time server status alerts
 socket.on('connect', () => {
-    msg.innerText = "✅ System Online";
+    msg.innerText = "✅ System Connected";
     msg.style.color = "green";
 });
 
 socket.on('connect_error', () => {
-    msg.innerText = "⏳ Waking up server... (may take 30s)";
+    msg.innerText = "⏳ Waking up server... please wait 30 seconds.";
     msg.style.color = "orange";
 });
 
@@ -24,7 +24,7 @@ function handleLogin() {
 
 socket.on('loginResponse', (res) => {
     if(res.success) {
-        // Save user data for the next page
+        // Save user data to LocalStorage so portals can identify the user
         localStorage.setItem('user', JSON.stringify(res.user));
         window.location.href = res.target;
     } else {
