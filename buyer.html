@@ -1,14 +1,12 @@
-// Add to the top of the <script> in buyer.html
-const currentTrader = localStorage.getItem('traderId');
-if (!currentTrader) {
-    alert("Please login first!");
-    window.location.href = "login.html";
+// Add to the top of the <script>
+const traderId = localStorage.getItem('traderId');
+if (!traderId) {
+    window.location.href = "login.html"; // Redirect to login if not authenticated
 }
 
-// Update the bid function
 function placeBid(amount) {
     socket.emit('placeBid', { 
         amount: amount, 
-        userId: currentTrader // Uses the ID from login
+        userId: traderId // Bidding is now tied to the logged-in ID
     });
 }
