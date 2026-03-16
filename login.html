@@ -1,26 +1,12 @@
-<div class="login-card">
-    <h2>Spice Portal Login</h2>
-    <input type="text" id="uid" placeholder="Enter ID (e.g. TRD-101)">
-    <button onclick="attemptLogin()">Enter Portal</button>
-</div>
-
-<script>
-    function attemptLogin() {
-        const id = document.getElementById('uid').value;
-        socket.emit('login', { userId: id });
-    }
-
-    socket.on('loginSuccess', (user) => {
-        localStorage.setItem('userRole', user.role);
-        // Redirect based on role
-        const routes = {
-            'admin': 'index.html',
-            'company': 'company-dashboard.html',
-            'trader': 'buyer.html',
-            'planter': 'planter-portal.html',
-            'lab': 'colour-check.html',
-            'viewer': 'live-stream.html'
-        };
-        window.location.href = routes[user.role];
-    });
-</script>
+socket.on('loginSuccess', (user) => {
+    localStorage.setItem('bidderId', document.getElementById('uid').value);
+    const routes = {
+        'admin': 'index.html',
+        'company': 'company-dashboard.html',
+        'trader': 'buyer.html',
+        'planter': 'planter-portal.html',
+        'lab': 'colour-check.html',
+        'viewer': 'live-stream.html'
+    };
+    window.location.href = routes[user.role];
+});
