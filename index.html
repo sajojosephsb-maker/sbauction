@@ -1,39 +1,47 @@
-<div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
-    <h3>👤 Manage Traders</h3>
-    <input type="text" id="newTraderId" placeholder="Trader ID (e.g. TRADER01)">
-    <input type="text" id="newTraderPass" placeholder="Trader Password">
-    <button onclick="addTrader()" style="width:100%; padding:10px; background:#3498db; color:white; border:none; border-radius:5px; cursor:pointer;">Create Trader Login</button>
-    
-    <div id="trader-status" style="font-size: 0.8rem; margin: 10px 0;"></div>
+<div class="box" style="margin-top:20px; width: 100%; max-width: 600px;">
+    <h3>👥 Trader Management</h3>
+    <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <input type="text" id="tId" placeholder="Trader ID">
+        <input type="text" id="tPass" placeholder="Password">
+        <button onclick="createTrader()" style="background:#27ae60; color:white; border:none; padding:10px; border-radius:5px;">Create</button>
+    </div>
 
-    <ul id="trader-list" style="text-align: left; font-size: 0.9rem; list-style: none; padding: 0;">
-        </ul>
+    <table style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background:#f8f9fa;">
+                <th>Trader ID</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="trader-list-body"></tbody>
+    </table>
 </div>
 
 <script>
-    function addTrader() {
-        const traderId = document.getElementById('newTraderId').value;
-        const traderPassword = document.getElementById('newTraderPass').value;
-        const adminPassword = document.getElementById('pass').value;
-
-        if(!traderId || !traderPassword) return alert("Fill all fields");
-
-        socket.emit('createTrader', { traderId, traderPassword, adminPassword });
+    function createTrader() {
+        const traderId = document.getElementById('tId').value;
+        const traderPassword = document.getElementById('tPass').value;
+        socket.emit('createTrader', { traderId, traderPassword });
     }
 
-    socket.on('traderCreated', (res) => {
-        const status = document.getElementById('trader-status');
-        status.innerText = res.success ? `✅ Created: ${res.id}` : `❌ Error: ${res.message}`;
-        status.style.color = res.success ? "green" : "red";
-    });
-
     socket.on('traderListUpdate', (traders) => {
-        const list = document.getElementById('trader-list');
-        list.innerHTML = "<b>Active Traders:</b>" + traders.map(t => 
-            `<li style="padding:5px; border-bottom:1px solid #eee;">🆔 ${t.userId} | 🔑 ${t.password}</li>`
-        ).join('');
+        const body = document.getElementById('trader-list-body');
+        body.innerHTML = traders.map(t => `
+            <tr>
+                <td>${t.userId}</td>
+                <td><span style="color:${t.status==='active'?'green':'red'}">${t.status.toUpperCase()}</span></td>
+                <td>
+                    <button onclick="updateStatus('${t.userId}', 'blocked')" style="background:#f39c12; color:white; border:none; padding:5px; border-radius:3px; cursor:pointer;">Block</button>
+                    <button onclick="updateStatus('${t.userId}', 'banned')" style="background:#e74c3c; color:white; border:none; padding:5px; border-radius:3px; cursor:pointer;">Ban</button>
+                    <button onclick="updateStatus('${t.userId}', 'active')" style="background:#3498db; color:white; border:none; padding:5px; border-radius:3px; cursor:pointer;">Unblock</button>
+                    <button onclick="deleteT('${t.userId}')" style="background:#333; color:white; border:none; padding:5px; border-radius:3px; cursor:pointer;">Delete</button>
+                </td>
+            </tr>
+        `).join('');
     });
 
-    // Ask for the list when admin connects
+    function updateStatus(id, status) { socket.emit('updateTraderStatus', { id, status }); }
+    function deleteT(id) { if(confirm('Delete permanently?')) socket.emit('deleteTrader', id); }
     socket.emit('getTraders');
 </script>
