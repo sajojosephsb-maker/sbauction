@@ -1,62 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Panel | Spice Auction</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
-        input { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
-        button { padding: 10px; cursor: pointer; border: none; border-radius: 4px; background: #27ae60; color: white; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
-        #trader-add-status { font-weight: bold; margin: 10px 0; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h2>👥 Trader Management</h2>
-        <div id="trader-add-status">Ready to add traders...</div>
-        <input type="text" id="tId" placeholder="Trader ID">
-        <input type="password" id="tPass" placeholder="Password">
-        <button onclick="createTrader()">Create Trader</button>
+<div class="card" style="margin-top:20px; border-left: 5px solid #3498db;">
+    <h2>🏢 Company Management</h2>
+    <input type="text" id="cId" placeholder="Company ID">
+    <input type="password" id="cPass" placeholder="Password">
+    <button onclick="createAccount('company')" style="background:#3498db;">Create Company Login</button>
+</div>
 
-        <table>
-            <thead><tr><th>ID</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="trader-list-body"></tbody>
-        </table>
-    </div>
-
-    <script>
-        const socket = io("https://spice-auction-server.onrender.com");
-
-        function createTrader() {
-            const traderId = document.getElementById('tId').value;
-            const traderPassword = document.getElementById('tPass').value;
-            socket.emit('createTrader', { traderId, traderPassword });
-        }
-
-        socket.on('traderStatus', (res) => {
-            const statusDiv = document.getElementById('trader-add-status');
-            statusDiv.innerText = res.msg;
-            statusDiv.style.color = res.success ? "green" : "red";
-        });
-
-        socket.on('traderListUpdate', (traders) => {
-            const body = document.getElementById('trader-list-body');
-            body.innerHTML = traders.map(t => `
-                <tr>
-                    <td>${t.userId}</td>
-                    <td style="color:${t.status==='active'?'green':'red'}">${t.status}</td>
-                    <td>
-                        <button style="background:#f39c12" onclick="socket.emit('updateTraderStatus',{id:'${t.userId}',status:'blocked'})">Block</button>
-                        <button style="background:#333" onclick="socket.emit('deleteTrader','${t.userId}')">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
-        });
-
-        socket.emit('getTraders');
-    </script>
-</body>
-</html>
+<script>
+    function createAccount(role) {
+        const userId = role === 'company' ? document.getElementById('cId').value : document.getElementById('tId').value;
+        const password = role === 'company' ? document.getElementById('cPass').value : document.getElementById('tPass').value;
+        socket.emit('createAccount', { userId, password, role });
+    }
+</script>
