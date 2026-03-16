@@ -1,20 +1,10 @@
-<h2 id="welcomeMsg">Checking access...</h2>
-<div id="uploadSection">
-    <h3>📤 Upload Your Auction Lots (CSV)</h3>
-    <input type="file" id="companyCsv" accept=".csv">
-    <div id="uploadStatus"></div>
-</div>
-
-<script>
-    const user = localStorage.getItem('userId');
-    if (!user) {
-        window.location.href = "login.html"; 
-    } else {
-        document.getElementById('welcomeMsg').innerText = "🏢 Company Portal: " + user;
-    }
-
-    document.getElementById('companyCsv').addEventListener('change', (e) => {
-        // Add your CSV parsing and socket.emit('uploadCatalogue') logic here
-        // This will allow companies to upload their own lots directly
-    });
-</script>
+document.getElementById('companyCsv').addEventListener('change', (e) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        // Simple logic to send the data to the server
+        const list = ev.target.result.split('\n').map(row => row.split(','));
+        socket.emit('uploadCatalogue', { list, companyId: user });
+        document.getElementById('uploadStatus').innerText = "✅ Lots Uploaded Successfully!";
+    };
+    reader.readAsText(e.target.files[0]);
+});
