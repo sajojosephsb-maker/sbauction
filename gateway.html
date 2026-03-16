@@ -1,14 +1,20 @@
 const socket = io('https://spice-auction-server.onrender.com');
+const msg = document.getElementById('msg');
 
-// Visual feedback that the server is connecting
+// Real-time server status
 socket.on('connect', () => {
-    document.getElementById('msg').innerText = "✅ System Connected";
-    document.getElementById('msg').style.color = "green";
+    msg.innerText = "✅ System Online";
+    msg.style.color = "green";
+});
+
+socket.on('connect_error', () => {
+    msg.innerText = "⏳ Waking up server... (may take 30s)";
+    msg.style.color = "orange";
 });
 
 function handleLogin() {
     const btn = document.querySelector('button');
-    btn.innerText = "Authenticating...";
+    btn.innerText = "Verifying...";
     btn.disabled = true;
     
     const loginId = document.getElementById('loginId').value;
@@ -18,14 +24,14 @@ function handleLogin() {
 
 socket.on('loginResponse', (res) => {
     if(res.success) {
-        // Professional transition
-        document.body.style.opacity = '0';
-        setTimeout(() => window.location.href = res.target, 500);
+        // Save user data for the next page
+        localStorage.setItem('user', JSON.stringify(res.user));
+        window.location.href = res.target;
     } else {
         const btn = document.querySelector('button');
         btn.innerText = "Access Portal";
         btn.disabled = false;
-        document.getElementById('msg').innerText = res.message;
-        document.getElementById('msg').style.color = "red";
+        msg.innerText = res.message;
+        msg.style.color = "red";
     }
 });
