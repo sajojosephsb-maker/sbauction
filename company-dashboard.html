@@ -1,4 +1,10 @@
 <h2 id="welcomeMsg">Checking access...</h2>
+<div id="uploadSection">
+    <h3>📤 Upload Your Auction Lots (CSV)</h3>
+    <input type="file" id="companyCsv" accept=".csv">
+    <div id="uploadStatus"></div>
+</div>
+
 <script>
     const user = localStorage.getItem('userId');
     if (!user) {
@@ -6,4 +12,9 @@
     } else {
         document.getElementById('welcomeMsg').innerText = "🏢 Company Portal: " + user;
     }
+
+    document.getElementById('companyCsv').addEventListener('change', (e) => {
+        // Add your CSV parsing and socket.emit('uploadCatalogue') logic here
+        // This will allow companies to upload their own lots directly
+    });
 </script>
