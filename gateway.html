@@ -3,13 +3,24 @@
     <input type="text" id="loginId" placeholder="User ID / Phone Number">
     <input type="password" id="password" placeholder="Secure Password">
     <button onclick="handleLogin()">Access Portal</button>
+    <div id="msg" style="color:red; margin-top:10px;"></div>
 </div>
 
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
+    const socket = io('https://spice-auction-server.onrender.com');
+
+    function handleLogin() {
+        const loginId = document.getElementById('loginId').value;
+        const password = document.getElementById('password').value;
+        socket.emit('attemptLogin', { loginId, password });
+    }
+
     socket.on('loginResponse', (res) => {
         if(res.success) {
-            // Smart redirection based on role
             window.location.href = res.target; 
+        } else {
+            document.getElementById('msg').innerText = res.message;
         }
     });
 </script>
