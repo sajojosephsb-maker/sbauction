@@ -1,19 +1,12 @@
-// Function for Admin to create Trader or Company
-function createAccount(role) {
-    const id = role === 'company' ? document.getElementById('cId').value : document.getElementById('tId').value;
-    const pass = role === 'company' ? document.getElementById('cPass').value : document.getElementById('tPass').value;
-    socket.emit('createAccount', { userId: id, password: pass, role: role });
-}
-
-// Update UI table with both Traders and Companies
-socket.on('userListUpdate', (users) => {
-    const body = document.getElementById('user-table-body');
-    body.innerHTML = users.map(u => `
-        <tr>
-            <td>${u.userId}</td>
-            <td><b>${u.role.toUpperCase()}</b></td>
-            <td style="color:${u.status==='active'?'green':'red'}">${u.status}</td>
-            <td><button onclick="deleteUser('${u.userId}')">Delete</button></td>
-        </tr>
-    `).join('');
+// Add this to your index.html script
+socket.on('status', (res) => {
+    const statusDiv = document.getElementById('admin-status-msg');
+    statusDiv.innerText = res.msg;
+    statusDiv.style.color = res.success ? "green" : "red";
 });
+
+function createCompany() {
+    const id = document.getElementById('cId').value;
+    const pass = document.getElementById('cPass').value;
+    socket.emit('createAccount', { userId: id, password: pass, role: 'company' });
+}
