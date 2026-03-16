@@ -4,19 +4,21 @@
     <title>Bidder Terminal</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
-<body>
-    <h1>Bidder Terminal</h1>
-    <div id="status">Checking credentials...</div>
-    <button onclick="logout()" style="background:red; color:white;">Logout</button>
+<body style="font-family: sans-serif; text-align: center; padding: 50px;">
+    <button onclick="logout()" style="float:right; background:red; color:white; padding:10px;">Logout</button>
+    <h1 id="welcome">Loading...</h1>
+    <div id="auction-box">
+        <h3>Live Bidding Active</h3>
+        </div>
 
     <script>
         const socket = io("https://spice-auction-server.onrender.com");
         const traderId = localStorage.getItem('traderId');
 
         if (!traderId) {
-            window.location.href = "login.html"; 
+            window.location.href = "login.html";
         } else {
-            document.getElementById('status').innerText = "Logged in as: " + traderId;
+            document.getElementById('welcome').innerText = "Welcome, " + traderId;
         }
 
         function logout() {
