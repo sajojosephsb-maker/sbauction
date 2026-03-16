@@ -1,17 +1,45 @@
-// Inside login.html script
-function login() {
-    const userId = document.getElementById('uid').value;
-    const password = document.getElementById('pwd').value;
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trader Login | Spice Auction</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #2c3e50; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 320px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .error { color: #e74c3c; font-size: 0.9rem; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Trader Login</h2>
+        <input type="text" id="uid" placeholder="Trader ID">
+        <input type="password" id="pwd" placeholder="Password">
+        <button onclick="handleLogin()">Login to Auction</button>
+        <div id="errMsg" class="error"></div>
+    </div>
 
-    // Send login request to server
-    socket.emit('attemptLogin', { userId, password });
-}
+    <script>
+        const socket = io("https://spice-auction-server.onrender.com");
 
-socket.on('loginResponse', (res) => {
-    if(res.success) {
-        localStorage.setItem('user', res.userId);
-        window.location.href = res.targetPage; // e.g. buyer.html
-    } else {
-        alert("Invalid ID or Password");
-    }
-});
+        function handleLogin() {
+            const userId = document.getElementById('uid').value;
+            const password = document.getElementById('pwd').value;
+            socket.emit('attemptLogin', { userId, password });
+        }
+
+        socket.on('loginResponse', (res) => {
+            if (res.success) {
+                // Store session and redirect
+                localStorage.setItem('traderId', res.userId);
+                window.location.href = "buyer.html";
+            } else {
+                const err = document.getElementById('errMsg');
+                err.innerText = res.message;
+                err.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
