@@ -1,32 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Login | Spice Auction</title>
-    <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 300px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <div class="login-card">
-        <h2>Admin Login</h2>
-        <input type="password" id="adminPass" placeholder="Enter Admin Password">
-        <button onclick="checkLogin()">Login</button>
-        <p id="msg" style="color: red; font-size: 0.8rem;"></p>
-    </div>
+<div class="login-card">
+    <h2>Spice Portal Login</h2>
+    <input type="text" id="uid" placeholder="Enter ID (e.g. TRD-101)">
+    <button onclick="attemptLogin()">Enter Portal</button>
+</div>
 
-    <script>
-        function checkLogin() {
-            const pass = document.getElementById('adminPass').value;
-            if (pass === "spices_admin_2026") {
-                localStorage.setItem("adminLoggedIn", "true");
-                window.location.href = "index.html"; // Goes to your dashboard
-            } else {
-                document.getElementById('msg').innerText = "Incorrect Password!";
-            }
-        }
-    </script>
-</body>
-</html>
+<script>
+    function attemptLogin() {
+        const id = document.getElementById('uid').value;
+        socket.emit('login', { userId: id });
+    }
+
+    socket.on('loginSuccess', (user) => {
+        localStorage.setItem('userRole', user.role);
+        // Redirect based on role
+        const routes = {
+            'admin': 'index.html',
+            'company': 'company-dashboard.html',
+            'trader': 'buyer.html',
+            'planter': 'planter-portal.html',
+            'lab': 'colour-check.html',
+            'viewer': 'live-stream.html'
+        };
+        window.location.href = routes[user.role];
+    });
+</script>
