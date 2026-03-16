@@ -1,12 +1,17 @@
-socket.on('loginSuccess', (user) => {
-    localStorage.setItem('bidderId', document.getElementById('uid').value);
-    const routes = {
-        'admin': 'index.html',
-        'company': 'company-dashboard.html',
-        'trader': 'buyer.html',
-        'planter': 'planter-portal.html',
-        'lab': 'colour-check.html',
-        'viewer': 'live-stream.html'
-    };
-    window.location.href = routes[user.role];
+// Inside login.html script
+function login() {
+    const userId = document.getElementById('uid').value;
+    const password = document.getElementById('pwd').value;
+
+    // Send login request to server
+    socket.emit('attemptLogin', { userId, password });
+}
+
+socket.on('loginResponse', (res) => {
+    if(res.success) {
+        localStorage.setItem('user', res.userId);
+        window.location.href = res.targetPage; // e.g. buyer.html
+    } else {
+        alert("Invalid ID or Password");
+    }
 });
