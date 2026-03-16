@@ -1,21 +1,19 @@
-<div class="card">
-    <h2>Auction Control</h2>
-    <div class="timer" id="timer">00</div>
-    <button class="btn" onclick="nextLot()">✅ START / NEXT LOT</button>
-    <hr>
-    <h3>👥 Approval Pending</h3>
-    <div id="user-list"></div>
-</div>
-
-<script>
-    socket.on('userList', (users) => {
-        const list = users.filter(u => !u.isApproved);
-        document.getElementById('user-list').innerHTML = list.map(u => `
-            <div style="border-bottom:1px solid #eee; padding:5px;">
-                ${u.name} (${u.userId}) 
-                <button onclick="approve('${u.userId}')">Approve</button>
-            </div>
-        `).join('') || "No pending users";
-    });
-    function approve(id) { socket.emit('approveUser', { targetId: id, password: "spices_admin_2026" }); }
-</script>
+document.getElementById('csvFile').addEventListener('change', function(e) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const rows = ev.target.result.split('\n').slice(1);
+        const list = rows.map(r => {
+            const c = r.split(',');
+            return {
+                lotNumber: c[0], collectionCentre: c[1], type: c[2], ownerName: c[3],
+                idNumber: c[4], receiptNumber: c[5], qtyWithBag: c[6], qtyWithoutBag: c[7],
+                literWeight: c[8], bags: c[9], gradeType: c[10], grade: c[11],
+                reservedPrice: c[12], startPrice: c[13], immature: c[14], moisture: c[15],
+                mobile: c[16], special: c[17], colour: c[18], size: c[19], split: c[20],
+                bankName: c[21], branch: c[22], accountNo: c[23], ifsc: c[24]
+            };
+        }).filter(i => i.lotNumber);
+        socket.emit('uploadCatalogue', { list, password: "spices_admin_2026" });
+    };
+    reader.readAsText(e.target.files[0]);
+});
