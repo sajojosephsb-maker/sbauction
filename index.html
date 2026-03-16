@@ -1,12 +1,13 @@
-// Add this to your index.html script
-socket.on('status', (res) => {
-    const statusDiv = document.getElementById('admin-status-msg');
-    statusDiv.innerText = res.msg;
-    statusDiv.style.color = res.success ? "green" : "red";
-});
-
-function createCompany() {
-    const id = document.getElementById('cId').value;
-    const pass = document.getElementById('cPass').value;
-    socket.emit('createAccount', { userId: id, password: pass, role: 'company' });
-}
+<div class="card" style="margin-top:20px; border-left: 5px solid #9b59b6;">
+    <h2>📊 Registered Companies & Lots</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Company Name</th>
+                <th>Status</th>
+                <th>Lots Uploaded</th>
+            </tr>
+        </thead>
+        <tbody id="company-summary-body"></tbody>
+    </table>
+</div>
