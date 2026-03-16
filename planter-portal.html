@@ -1,53 +1,84 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
     const { jsPDF } = window.jspdf;
 
-    socket.on('updateBid', (data) => {
-        // ... (existing update logic)
-        if (data.history) {
-            const myWins = data.history.filter(s => s.ownerName === userId || s.idNumber === userId);
-            document.getElementById('my-sales').innerHTML = myWins.map(w => `
-                <div class="history-item">
-                    <span>Lot ${w.lotNumber} - ₹${w.rate}</span>
-                    <button onclick='generatePDF(${JSON.stringify(w)})' style="font-size:0.7rem; padding:4px; background:#27ae60; color:white; border:none; border-radius:3px; cursor:pointer;">📄 Download PDF</button>
-                </div>
-            `).join('');
-        }
-    });
-
     function generatePDF(data) {
         const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text("SPICE AUCTION - CROP RECEIPT & INVOICE", 105, 20, { align: 'center' });
         
+        // 1. OFFICIAL LETTERHEAD
+        doc.setFillColor(39, 174, 96); // Green header
+        doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(22);
+        doc.text("OFFICIAL CROP RECEIPT", 105, 20, { align: 'center' });
         doc.setFontSize(10);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 30);
-        doc.text(`Lot Number: ${data.lotNumber}`, 20, 40);
-        doc.text(`Planter Name: ${data.ownerName}`, 20, 50);
-        doc.text(`ID (GST/PAN): ${data.idNumber}`, 20, 60);
-        doc.text(`Receipt No: ${data.receiptNumber}`, 20, 70);
-        
-        doc.line(20, 75, 190, 75); // Divider
-        
-        doc.text("QUALITY & QUANTITY DETAILS", 20, 85);
-        doc.text(`Net Weight: ${data.qtyWithoutBag} Kg`, 20, 95);
-        doc.text(`Moisture: ${data.moisture}%`, 20, 105);
-        doc.text(`Color: ${data.colour}`, 20, 115);
-        doc.text(`Grade: ${data.grade}`, 20, 125);
-        
-        doc.line(20, 130, 190, 130); // Divider
+        doc.text("SPICE AUCTION TRADING CENTER | GOVT REGULATED", 105, 30, { align: 'center' });
 
-        doc.text("PAYMENT INFORMATION", 20, 140);
-        doc.text(`Auction Rate: ₹${data.rate} / Kg`, 20, 150);
-        const total = data.rate * data.qtyWithoutBag;
+        // 2. PLANTER & LOT INFORMATION
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
-        doc.text(`GROSS TOTAL: ₹${total.toLocaleString()}`, 20, 160);
-        
+        doc.text("PLANTER DETAILS", 20, 55);
         doc.setFont(undefined, 'normal');
-        doc.text(`Bank: ${data.bankName} | Acc: ${data.accountNo}`, 20, 175);
-        doc.text(`IFSC: ${data.ifsc}`, 20, 185);
+        doc.text(`Name: ${data.ownerName}`, 20, 65);
+        doc.text(`ID/GST: ${data.idNumber}`, 20, 72);
+        doc.text(`Mobile: ${data.mobile}`, 20, 79);
+        
+        doc.setFont(undefined, 'bold');
+        doc.text("LOT DETAILS", 120, 55);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Lot No: ${data.lotNumber}`, 120, 65);
+        doc.text(`Receipt: ${data.receiptNumber}`, 120, 72);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 120, 79);
 
-        doc.save(`Invoice_Lot_${data.lotNumber}.pdf`);
+        // 3. QUALITY PARAMETERS (The data from your 25+ fields)
+        doc.setFillColor(240, 240, 240);
+        doc.rect(20, 90, 170, 45, 'F');
+        doc.text("QUALITY ANALYSIS REPORT", 105, 98, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text(`Moisture: ${data.moisture}%`, 30, 110);
+        doc.text(`Color: ${data.colour}`, 30, 118);
+        doc.text(`Size: ${data.size}`, 30, 126);
+        doc.text(`Grade: ${data.grade}`, 120, 110);
+        doc.text(`Liter Wt: ${data.literWeight}g/L`, 120, 118);
+        doc.text(`Special: ${data.special}`, 120, 126);
+
+        // 4. FINANCIAL SUMMARY
+        doc.setFontSize(12);
+        doc.text(`Quantity: ${data.qtyWithoutBag} Kg`, 20, 150);
+        doc.text(`Rate: ₹${data.rate} / Kg`, 20, 158);
+        const total = data.rate * data.qtyWithoutBag;
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text(`NET PAYABLE: ₹${total.toLocaleString()}`, 20, 170);
+
+        // 5. BANKING FOR SETTLEMENT
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Bank: ${data.bankName} | Branch: ${data.branch}`, 20, 185);
+        doc.text(`A/C: ${data.accountNo} | IFSC: ${data.ifsc}`, 20, 192);
+
+        // 6. QR CODE & DIGITAL SIGNATURE
+        // Place QR Code (Bottom Left)
+        const qrContent = `Lot:${data.lotNumber}|Amt:${total}|Planter:${data.ownerName}`;
+        const qrDiv = document.createElement('div');
+        new QRCode(qrDiv, qrContent);
+        const qrImg = qrDiv.querySelector('img').src;
+        doc.addImage(qrImg, 'PNG', 20, 210, 30, 30);
+        doc.setFontSize(8);
+        doc.text("Scan to verify lot", 20, 245);
+
+        // Place Digital Signature (Bottom Right)
+        doc.setFont("courier", "italic");
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 150); // Official Blue
+        doc.text("Electronically Signed", 140, 220);
+        doc.text("AUCTION AUTHORITY", 140, 228);
+        doc.setDrawColor(0, 0, 150);
+        doc.line(135, 232, 185, 232);
+
+        doc.save(`Official_Invoice_Lot_${data.lotNumber}.pdf`);
     }
 </script>
