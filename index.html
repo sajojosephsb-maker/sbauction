@@ -1,41 +1,37 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Dashboard</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f7f6; }
-        .section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #e74c3c; }
-        .company-sec { border-left-color: #3498db; }
-        input, button { padding: 10px; margin: 5px; }
-        button { cursor: pointer; background: #333; color: white; border: none; }
-    </style>
-</head>
-<body>
-    <h1>⚙️ Master Admin Control</h1>
+<div class="section" style="border-left: 5px solid #8e44ad;">
+    <h2>📊 Master Report Center</h2>
+    <select id="timeFilter">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+        <option value="annually">Annually</option>
+    </select>
+    <input type="text" id="filterId" placeholder="Search ID (Trader/Planter/Co)">
+    <button onclick="fetchReport()" style="background:#8e44ad">Generate Report</button>
+    
+    <div id="reportSummary" style="margin-top:15px; font-weight:bold;"></div>
+    <table id="reportTable">
+        <thead>
+            <tr><th>Date</th><th>Lot</th><th>Trader</th><th>Planter</th><th>Price</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
 
-    <div class="section">
-        <h2>👤 Trader Management</h2>
-        <input type="text" id="tId" placeholder="Trader ID">
-        <input type="password" id="tPass" placeholder="Password">
-        <button onclick="create('trader')">Create Trader</button>
-    </div>
+<script>
+    function fetchReport() {
+        const time = document.getElementById('timeFilter').value;
+        const id = document.getElementById('filterId').value;
+        socket.emit('getAdminReports', { time: time, traderId: id }); // Logic can be expanded for all IDs
+    }
 
-    <div class="section company-sec">
-        <h2>🏢 Company Management</h2>
-        <input type="text" id="cId" placeholder="Company ID">
-        <input type="password" id="cPass" placeholder="Password">
-        <button onclick="create('company')" style="background:#3498db">Create Company</button>
-    </div>
-
-    <script>
-        const socket = io("https://spice-auction-server.onrender.com");
-        function create(role) {
-            const id = role === 'company' ? document.getElementById('cId').value : document.getElementById('tId').value;
-            const pass = role === 'company' ? document.getElementById('cPass').value : document.getElementById('tPass').value;
-            socket.emit('createAccount', { userId: id, password: pass, role: role });
-            alert(role + " creation request sent!");
-        }
-    </script>
-</body>
-</html>
+    socket.on('reportDataUpdate', (data) => {
+        const body = document.querySelector("#reportTable tbody");
+        let total = 0;
+        body.innerHTML = data.map(row => {
+            total += row.totalValue;
+            return `<tr><td>${new Date(row.timestamp).toLocaleDateString()}</td><td>${row.lotNumber}</td><td>${row.traderId}</td><td>${row.planterId}</td><td>₹${row.finalPrice}</td></tr>`;
+        }).join('');
+        document.getElementById('reportSummary').innerText = `Total Revenue for Period: ₹${total.toLocaleString()}`;
+    });
+</script>
