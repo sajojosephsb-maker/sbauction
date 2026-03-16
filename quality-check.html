@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quality Lab | Spice Auction</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #fffdf0; padding: 20px; }
+        .qa-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 8px solid #f1c40f; max-width: 500px; margin: auto; }
+        .warning { color: red; font-weight: bold; display: none; margin-top: 10px; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; }
+        button { width: 100%; padding: 12px; background: #f1c40f; border: none; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="qa-card">
+        <h2>🧪 Quality Lab Entry</h2>
+        <input type="text" id="lotNo" placeholder="Enter Lot Number">
+        <input type="text" id="planterName" placeholder="Planter Name/ID">
+        <label>Artificial Colouring Detected?</label>
+        <select id="colourCheck" onchange="checkWarning()">
+            <option value="false">No (Natural)</option>
+            <option value="true">YES (Artificially Coloured)</option>
+        </select>
+        <div id="warnMsg" class="warning">⚠️ WARNING: Artificial Colour Detected!</div>
+        <button onclick="saveQualityData()">Submit Quality Report</button>
+    </div>
+
+    <script>
+        function checkWarning() {
+            const isColoured = document.getElementById('colourCheck').value === 'true';
+            document.getElementById('warnMsg').style.display = isColoured ? 'block' : 'none';
+        }
+
+        function saveQualityData() {
+            const lot = document.getElementById('lotNo').value;
+            const planter = document.getElementById('planterName').value;
+            const isColoured = document.getElementById('colourCheck').value === 'true';
+
+            if(isColoured) {
+                downloadDeclaration(lot, planter);
+            }
+            alert("Quality Data Saved Successfully!");
+        }
+
+        function downloadDeclaration(lot, planter) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(22);
+            doc.setTextColor(255, 0, 0);
+            doc.text("DECLARATION: ARTIFICIAL COLOURING", 20, 30);
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Lot Number: ${lot}`, 20, 50);
+            doc.text(`Planter Name: ${planter}`, 20, 60);
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 70);
+            doc.text("--------------------------------------------------", 20, 80);
+            doc.text("This lot has been officially marked as ARTIFICIALLY COLOURED.", 20, 90);
+            doc.text("Action: Lot disqualified from natural cardamom category.", 20, 100);
+            doc.save(`Declaration_Lot_${lot}.pdf`);
+        }
+    </script>
+</body>
+</html>
